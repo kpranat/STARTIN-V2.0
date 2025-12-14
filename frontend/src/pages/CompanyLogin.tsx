@@ -1,9 +1,9 @@
 import React, { useState, FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // 1. Import useNavigate
+import { useNavigate, Link } from 'react-router-dom';
 import '../App.css';
 
 const CompanyLogin: React.FC = () => {
-  const navigate = useNavigate(); // 2. Initialize the hook
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -20,17 +20,36 @@ const CompanyLogin: React.FC = () => {
     // Simulate Backend Login
     console.log("Login Data:", formData);
     
-    // Save a fake token so the Navbar knows we are logged in
+    // Save a fake token
     localStorage.setItem('companyToken', 'demo-token');
 
     alert("Login Successful! Redirecting...");
     
-    // 3. THIS WAS MISSING -> Redirect to the Company Profile
+    // Redirect to Company Profile
     navigate('/company/profile');
   };
 
   return (
     <div className="landing-container">
+      {/* NEW: Back Button */}
+      <div style={{ textAlign: 'left', marginBottom: '20px' }}>
+        <button 
+          onClick={() => navigate('/role-selection')}
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            color: '#555', 
+            cursor: 'pointer', 
+            display: 'flex', 
+            alignItems: 'center',
+            gap: '5px',
+            fontSize: '0.9rem' 
+          }}
+        >
+          ← Back to Role Selection
+        </button>
+      </div>
+
       <div className="form-container card">
         <h2 style={{ marginBottom: '20px', color: '#0f766e' }}>Company Login</h2>
         <form onSubmit={handleSubmit}>

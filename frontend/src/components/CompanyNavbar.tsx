@@ -18,9 +18,21 @@ const CompanyNavbar: React.FC = () => {
       </div>
 
       <div className="nav-links">
+        {/* Main Features */}
         <Link to="/company/profile" className="nav-link">Profile</Link>
         <Link to="/company/post-job" className="nav-link">Post Jobs</Link>
         <Link to="/company/applicants" className="nav-link">Applicants</Link>
+
+        {/* Navigation Shortcuts */}
+        <span style={{ color: '#ccc', margin: '0 5px' }}>|</span>
+
+        <Link to="/role-selection" className="nav-link" style={{ fontSize: '0.9rem', color: '#666' }}>
+          Change Role
+        </Link>
+        
+        <Link to="/" className="nav-link" style={{ fontSize: '0.9rem', color: '#666' }}>
+          Change Univ
+        </Link>
       </div>
 
       <button onClick={handleLogout} className="btn-logout">

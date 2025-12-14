@@ -17,13 +17,21 @@ const StudentNavbar: React.FC = () => {
       </div>
 
       <div className="nav-links">
-        {/* Home is where students discover/search for NEW jobs */}
+        {/* Main Features */}
         <Link to="/student/home" className="nav-link">Home</Link>
-        
-        {/*  Points to the new Applied Jobs page */}
         <Link to="/student/applied-jobs" className="nav-link">Applied Jobs</Link>
-        
         <Link to="/student/profile" className="nav-link">Profile</Link>
+
+        {/* Navigation Shortcuts */}
+        <span style={{ color: '#ccc', margin: '0 5px' }}>|</span>
+        
+        <Link to="/role-selection" className="nav-link" style={{ fontSize: '0.9rem', color: '#666' }}>
+          Change Role
+        </Link>
+        
+        <Link to="/" className="nav-link" style={{ fontSize: '0.9rem', color: '#666' }}>
+          Change Univ
+        </Link>
       </div>
 
       <button onClick={handleLogout} className="btn-logout">

@@ -1,30 +1,49 @@
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../App.css'; 
 
-const Landing = () => {
+const Landing: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="container landing-container">
-      <h1>Welcome to STARTIN'</h1>
-      <p>Are you a Student or a Company?</p>
-      
+    <div className="landing-container">
+      <h1>Welcome to Startin'</h1>
+      <p style={{ color: '#666', marginBottom: '40px' }}>
+        Please select your role to continue
+      </p>
+
+      {/*  Back Button to University Selection */}
+      <button 
+        onClick={() => navigate('/')} 
+        style={{ 
+          background: 'none', 
+          border: 'none', 
+          color: '#666', 
+          cursor: 'pointer', 
+          textDecoration: 'underline',
+          marginBottom: '20px'
+        }}
+      >
+        ← Back to University Selection
+      </button>
+
       <div className="selection-box">
-        {/* Student Option */}
+        {/* Student Card */}
         <div className="card">
           <h2>Student</h2>
-          <p>Find internships & hackathons.</p>
-          <div className="btn-group">
-            <Link to="/student/login" className="btn">Login</Link>
-            <Link to="/student/signup" className="link">Sign Up</Link>
-          </div>
+          <p>Find internships, apply to jobs, and build your career.</p>
+          <button className="btn" onClick={() => navigate('/student/login')}>
+            I am a Student
+          </button>
         </div>
 
-        {/* Company Option */}
+        {/* Company Card */}
         <div className="card">
           <h2>Company</h2>
-          <p>Hire talent & post challenges.</p>
-          <div className="btn-group">
-            <Link to="/company/login" className="btn">Login</Link>
-            <Link to="/company/signup" className="link">Sign Up</Link>
-          </div>
+          <p>Post jobs, hire talent, and manage applications.</p>
+          <button className="btn" style={{ backgroundColor: '#0f766e' }} onClick={() => navigate('/company/login')}>
+            I am a Company
+          </button>
         </div>
       </div>
     </div>
