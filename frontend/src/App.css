@@ -1,488 +1,250 @@
-/* =========================================
-   1. GLOBAL VARIABLES & RESETS
-   ========================================= */
+/* src/App.css */
+
+/* --- 1. Variables & Design Tokens --- */
 :root {
-  --primary: #4f46e5;       /* Indigo */
-  --primary-hover: #4338ca; /* Darker Indigo */
-  --text-main: #333;
-  --bg-light: #f4f4f9;
+  --primary: #4f46e5;       /* Student Theme (Indigo) */
+  --primary-hover: #4338ca;
+  
+  --teal: #0f766e;          /* Company Theme (Teal) */
+  --teal-hover: #0d5f58;
+
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --bg-page: #f9fafb;
   --white: #ffffff;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --radius: 8px;
 }
 
 body {
-  background-color: var(--bg-light);
-  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--bg-page);
   color: var(--text-main);
-  display: flex;
-  justify-content: center;
-  min-height: 100vh;
-  margin: 0;
 }
 
-#root {
-  width: 100%;
-  margin: 0 auto;
-  text-align: center; /* Note: You might want to remove this if text looks centered inside cards */
-}
-
-/* =========================================
-   2. GENERAL CONTAINERS & UTILITIES
-   ========================================= */
-.container {
-  background: var(--white);
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  margin: 20px;
-}
-
-.landing-container { max-width: 800px; }
-.form-container { width: 350px; margin: auto; }
+/* --- 2. Layout Containers --- */
 .page-container {
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 2rem;
-  background-color: #f9fafb;
-  min-height: 100vh;
+  min-height: 80vh;
 }
 
-/* =========================================
-   3. NAVBAR STYLES
-   ========================================= */
+/* Constrains width for Profiles, Logins, Forms */
+.profile-container, 
+.form-container, 
+.landing-container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: var(--white);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  text-align: left; /* Aligns form labels left */
+}
+
+/* Wider container for Landing page selection */
+.landing-container {
+  max-width: 900px;
+  text-align: center;
+}
+
+/* --- 3. Navbar Styles --- */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 0.75rem 2rem;
   background-color: var(--white);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 50;
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.25rem;
+  font-weight: 800;
   color: var(--primary);
+  letter-spacing: -0.5px;
 }
 
-.nav-links { display: flex; gap: 20px; }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
 
 .nav-link {
   text-decoration: none;
-  color: #555;
+  color: var(--text-muted);
   font-weight: 500;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: background 0.2s;
+  font-size: 0.95rem;
+  transition: color 0.2s;
 }
 
 .nav-link:hover {
-  background-color: #f3f4f6;
   color: var(--primary);
 }
 
-.btn-logout {
-  background-color: #fee2e2;
-  color: #dc2626;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-/* =========================================
-   4. FORMS & INPUTS
-   ========================================= */
-input, .search-input {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-}
-
-.search-box {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.search-input {
-  max-width: 300px; /* Fix: Prevents overflow on mobile */
-  margin: 0; /* Reset margin for flex layout */
-}
-
-/* =========================================
-   5. BUTTONS & LINKS
-   ========================================= */
-.btn, .search-btn {
-  background-color: #28a745; /* Green default */
-  color: white;
-  padding: 10px 20px;
-  text-decoration: none;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  display: inline-block;
-  margin: 5px;
-  font-weight: bold;
-}
-
-.btn:hover { background-color: #218838; }
-
-.search-btn {
-  background-color: var(--primary); /* Indigo for search */
-  margin: 0;
-}
-
-.search-btn:hover { background-color: var(--primary-hover); }
-
-.link {
-  color: #007bff;
-  text-decoration: none;
-  margin-left: 10px;
-}
-
-/* =========================================
-   6. SELECTION BOX & GENERIC CARDS
-   ========================================= */
-.selection-box {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.card {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #eee;
-  flex: 1;
-}
-
-/* =========================================
-   7. UNIVERSITY LIST SECTION
-   ========================================= */
-.uni-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 10px;
-}
-
-.uni-card {
-  background: var(--white);
-  padding: 15px 20px;
-  border-radius: 12px;
-  border: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.uni-card:hover {
-  border-color: var(--primary);
-  transform: translateX(5px);
-  box-shadow: 0 5px 15px rgba(79, 70, 229, 0.15);
-}
-
-.uni-card h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--text-main);
-  text-align: left;
-}
-
-.uni-card .arrow {
-  color: var(--primary);
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-/* =========================================
-   8. JOB DISCOVERY (GRID & CARDS)
-   ========================================= */
-.header-section {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.jobs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.job-card {
-  background: var(--white);
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  border: 1px solid #eee;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.2s;
-  text-align: left; /* Ensures job details are readable */
-}
-
-.job-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
-  margin-bottom: 10px;
-}
-
-.job-role {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #1f2937;
-  margin: 0;
-}
-
-.job-type {
-  background-color: #e0e7ff;
-  color: #3730a3;
-  padding: 4px 8px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-
-.company-name {
-  color: #6b7280;
-  font-weight: 500;
-  margin-bottom: 1rem;
-}
-
-.skills-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+/* --- 4. Form Elements (Inputs & Textareas) --- */
+.form-group {
   margin-bottom: 1.5rem;
 }
 
-.skill-tag {
-  background-color: #f3f4f6;
-  color: #374151;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  border: 1px solid #e5e7eb;
-}
-
-.apply-btn {
-  margin-top: auto;
-  width: 100%;
-  padding: 10px;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
-
-.apply-btn:hover { background-color: var(--primary-hover); }
-.apply-btn:active { transform: scale(0.98); }
-
-/* =========================================
-   9. PROFILE PAGE STYLES (Fixes)
-   ========================================= */
-
-/* 1. Wrapper to stop the form from being super wide */
-.profile-container {
-  max-width: 700px;       /* Constrains width to 700px */
-  margin: 40px auto;      /* Centers the card vertically/horizontally */
-  background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  text-align: left;       /* Aligns labels and inputs to the left */
-}
-
-/* 2. Style the Title */
-.profile-container h2 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: var(--primary);
-}
-
-/* 3. Group Labels and Inputs nicely */
-.form-group {
-  margin-bottom: 20px;
-}
-
 .form-group label {
-  display: block;         /* Forces label to sit above input */
-  margin-bottom: 8px;
+  display: block;
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #555;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
 }
 
-/* 4. Fix the "About Me" Textarea */
-textarea {
+input, textarea, select {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif; /* Matches input font */
-  min-height: 120px;      /* Gives it a good default height */
-  resize: vertical;       /* Allows user to stretch it down */
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background-color: #fff;
+  box-sizing: border-box; /* Critical for stopping overflow */
 }
 
-textarea:focus {
+input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-/* 5. Handle Side-by-Side Inputs (GitHub/LinkedIn) */
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Side-by-side inputs */
 .form-row {
   display: flex;
   gap: 20px;
 }
-
 .form-row .form-group {
-  flex: 1; /* Makes them share space equally */
+  flex: 1;
 }
 
-/* 6. Better File Upload Box */
+/* --- 5. Buttons --- */
+.btn, .btn-save, .apply-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+/* Primary Button (Student Default) */
+.btn, .btn-save {
+  background-color: var(--primary);
+  color: white;
+}
+.btn:hover, .btn-save:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+/* Logout Button (Subtle) */
+.btn-logout {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-logout:hover {
+  background-color: #fecaca;
+}
+
+/* --- 6. Cards (Landing & University) --- */
+.selection-box {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.card {
+  background: var(--white);
+  padding: 2rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  flex: 1;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+/* --- 7. Job Grid & Cards --- */
+.jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.job-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.job-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.job-role { margin: 0 0 5px 0; font-size: 1.1rem; }
+.company-name { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+
+.skills-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
+.skill-tag {
+  background: #f3f4f6; color: #374151;
+  padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;
+}
+
+/* --- 8. File Upload Box --- */
 .file-upload-box {
-  border: 2px dashed #ccc;
-  padding: 40px;
+  border: 2px dashed #d1d5db;
+  border-radius: var(--radius);
+  padding: 2rem;
   text-align: center;
-  border-radius: 8px;
-  background-color: #fafafa;
+  background-color: #f9fafb;
   cursor: pointer;
   transition: all 0.2s;
-  color: #777;
 }
-
 .file-upload-box:hover {
   border-color: var(--primary);
-  background-color: #eff6ff; /* Very light blue */
-  color: var(--primary);
+  background-color: #eef2ff;
 }
 
-/* 7. Save Button Wrapper */
+/* --- 9. Utility: Center Content --- */
 .btn-save-container {
-  text-align: center;
-  margin-top: 30px;
-}
-
-.btn-save {
-  background-color: var(--primary);
-  color: white;
-  padding: 12px 40px;
-  font-size: 1rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.btn-save:hover {
-  background-color: var(--primary-hover);
-}
-
-/* =========================================
-   10. PROFILE VIEW MODE (Read Only)
-   ========================================= */
-
-.profile-view {
-  text-align: left;
-}
-
-.profile-header {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 20px;
-  margin-bottom: 20px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.profile-name {
-  font-size: 1.8rem;
-  color: var(--primary);
-  margin: 0;
-}
-
-.profile-role {
-  color: #777;
-  font-size: 0.9rem;
-  margin-top: 5px;
-}
-
-.view-section {
-  margin-bottom: 25px;
-}
-
-.view-label {
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  color: #888;
-  letter-spacing: 1px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.view-content {
-  font-size: 1rem;
-  color: #333;
-  line-height: 1.6;
-}
-
-.link-group {
-  display: flex;
-  gap: 15px;
-}
-
-.profile-link {
-  color: var(--primary);
-  text-decoration: none;
-  font-weight: 500;
-  background: #e0e7ff;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
-
-.profile-link:hover {
-  background: var(--primary-hover);
-  color: white;
-}
-
-.btn-edit {
-  background-color: white;
-  border: 1px solid var(--primary);
-  color: var(--primary);
-  padding: 10px 30px;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-edit:hover {
-  background-color: var(--primary);
-  color: white;
+  justify-content: center;
+  margin-top: 2rem;
 }
