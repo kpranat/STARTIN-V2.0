@@ -1,5 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+// Context
+import { AuthProvider } from './context/AuthContext';
+
+// Components
+import ProtectedRoute from './components/ProtectedRoute';
+
 // General Pages
 import UniversitySelect from './pages/UniversitySelect';
 import Landing from './pages/Landing';
@@ -24,41 +30,92 @@ import './App.css';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Step 1: Select University */}
-        <Route path="/" element={<UniversitySelect />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Step 1: Select University */}
+          <Route path="/" element={<UniversitySelect />} />
 
-        {/* Step 2: Choose Role (Student vs Company) */}
-        <Route path="/role-selection" element={<Landing />} />
+          {/* Step 2: Choose Role (Student vs Company) */}
+          <Route path="/role-selection" element={<Landing />} />
 
-        {/* Step 3: Auth Flows */}
-        <Route path="/student/login" element={<StudentLogin />} />
-        <Route path="/student/signup" element={<StudentSignup />} />
-        <Route path="/company/login" element={<CompanyLogin />} />
-        <Route path="/company/signup" element={<CompanySignup />} />
+          {/* Step 3: Auth Flows */}
+          <Route path="/student/login" element={<StudentLogin />} />
+          <Route path="/student/signup" element={<StudentSignup />} />
+          <Route path="/company/login" element={<CompanyLogin />} />
+          <Route path="/company/signup" element={<CompanySignup />} />
 
-        {/* Step 4: Student Dashboard (Post-Login) */}
-        
-        {/* HOME -> Shows Job Discovery Board */}
-        <Route path="/student/home" element={<StudentHome />} />
+          {/* Step 4: Student Dashboard (Post-Login) - PROTECTED ROUTES */}
+          
+          {/* HOME -> Shows Job Discovery Board */}
+          <Route 
+            path="/student/home" 
+            element={
+              <ProtectedRoute redirectTo="/student/login">
+                <StudentHome />
+              </ProtectedRoute>
+            } 
+          />
 
-        {/* APPLIED JOBS -> Shows list of applied jobs */}
-        <Route path="/student/applied-jobs" element={<StudentAppliedJobs />} />
+          {/* APPLIED JOBS -> Shows list of applied jobs */}
+          <Route 
+            path="/student/applied-jobs" 
+            element={
+              <ProtectedRoute redirectTo="/student/login">
+                <StudentAppliedJobs />
+              </ProtectedRoute>
+            } 
+          />
 
-        {/* PROFILE -> Edit/View Profile */}
-        <Route path="/student/profile" element={<StudentProfile />} />
+          {/* PROFILE -> Edit/View Profile */}
+          <Route 
+            path="/student/profile" 
+            element={
+              <ProtectedRoute redirectTo="/student/login">
+                <StudentProfile />
+              </ProtectedRoute>
+            } 
+          />
 
-        {/* COMPANY DASHBOARD ROUTES */}
-        <Route path="/company/profile" element={<CompanyProfile />} />
-        <Route path="/company/post-job" element={<CompanyPostJob />} />
-        <Route path="/company/applicants" element={<CompanyApplicants />} />
-        
-        {/* Redirect /company/home to profile for now */}
-        <Route path="/company/home" element={<CompanyProfile />} />
-        
-      </Routes>
-    </Router>
+          {/* COMPANY DASHBOARD ROUTES - PROTECTED */}
+          <Route 
+            path="/company/profile" 
+            element={
+              <ProtectedRoute redirectTo="/company/login">
+                <CompanyProfile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/company/post-job" 
+            element={
+              <ProtectedRoute redirectTo="/company/login">
+                <CompanyPostJob />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/company/applicants" 
+            element={
+              <ProtectedRoute redirectTo="/company/login">
+                <CompanyApplicants />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Redirect /company/home to profile for now */}
+          <Route 
+            path="/company/home" 
+            element={
+              <ProtectedRoute redirectTo="/company/login">
+                <CompanyProfile />
+              </ProtectedRoute>
+            } 
+          />
+          
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
