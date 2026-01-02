@@ -6,7 +6,7 @@ from app.extensions import mail
 from flask_mail import Message
 from datetime import datetime, timezone, timedelta
 import jwt
-
+from werkzeug.security import generate_password_hash
 #HNADLE STUDENT SIGNUP ==========================================================================
 @StudentSignup_bp.route("/auth/StudentSignup",methods = ['POST'])
 def StudentSignUp():
@@ -33,7 +33,7 @@ def StudentSignUp():
     db.session.add(otp_data)
     db.session.commit()
     # Send email============================================
-    msg = Message("Your OTP Code", recipients=[email])
+    msg = Message("Your OTP Code for STARTIN is", recipients=[email])
     msg.body = f"Your OTP is {otp}. Valid for 10 minutes."
     mail.send(msg)
     return jsonify({"message": "OTP sent successfully"})
@@ -71,7 +71,7 @@ def VerifyOTP():
             return jsonify({"error": "Invalid OTP"}), 400    
         
         # OTP is valid → now create the student account============================
-        studentAuth_data = studentAuth(mailId=email, password=password)
+        studentAuth_data = studentAuth(mailId=email, password=generate_password_hash(password))
         db.session.add(studentAuth_data)
         
         # Delete OTP after successful verification============================
