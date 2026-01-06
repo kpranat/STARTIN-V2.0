@@ -11,6 +11,7 @@ const StudentSignup = () => {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   
   const [formData, setFormData] = useState({
     name: '',
@@ -34,8 +35,13 @@ const StudentSignup = () => {
       // Backend returns { message: "OTP sent successfully" } on success
       if (response.message) {
         setEmail(formData.email);
-        setStep(2); // Move to OTP verification
-        alert("Verification email sent! Please check your inbox.");
+        setSuccessMessage('Verification email sent! Please check your inbox.');
+        
+        // Show success message for 2 seconds before moving to OTP step
+        setTimeout(() => {
+          setSuccessMessage('');
+          setStep(2); // Move to OTP verification
+        }, 2000);
       } else {
         setError(response.message || 'Signup failed');
       }
@@ -62,8 +68,12 @@ const StudentSignup = () => {
       if (response.token) {
         // Store the JWT token using AuthContext
         login(response.token, { email: formData.email });
-        alert("Signup successful! Redirecting to home...");
-        navigate('/student/home');
+        setSuccessMessage('Signup successful! Redirecting to home...');
+        
+        // Show success message for 1.5 seconds before navigating
+        setTimeout(() => {
+          navigate('/student/home');
+        }, 1500);
       } else {
         setError(response.error || 'Invalid OTP');
       }
@@ -81,7 +91,25 @@ const StudentSignup = () => {
       <div className="container form-container">
         <h2>Verify Your Email</h2>
         <p>We've sent a verification code to {formData.email}</p>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && (
+          <div style={{ 
+            background: '#fee', 
+            color: '#c33', 
+            padding: '10px', 
+            borderRadius: '5px', 
+            marginBottom: '15px' 
+          }}>{error}</div>
+        )}
+        {successMessage && (
+          <div style={{ 
+            background: '#e7f7e7', 
+            color: '#2d662d', 
+            padding: '10px', 
+            borderRadius: '5px', 
+            marginBottom: '15px',
+            textAlign: 'center'
+          }}>{successMessage}</div>
+        )}
         <form onSubmit={handleVerifyOTP}>
           <input 
             type="text" 
@@ -109,7 +137,25 @@ const StudentSignup = () => {
   return (
     <div className="container form-container">
       <h2>Student Registration</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && (
+        <div style={{ 
+          background: '#fee', 
+          color: '#c33', 
+          padding: '10px', 
+          borderRadius: '5px', 
+          marginBottom: '15px' 
+        }}>{error}</div>
+      )}
+      {successMessage && (
+        <div style={{ 
+          background: '#e7f7e7', 
+          color: '#2d662d', 
+          padding: '10px', 
+          borderRadius: '5px', 
+          marginBottom: '15px',
+          textAlign: 'center'
+        }}>{successMessage}</div>
+      )}
       <form onSubmit={handleSubmit}>
         <input name="name" placeholder="Full Name" onChange={handleChange} required disabled={isLoading} />
         <input name="email" type="email" placeholder="Email" onChange={handleChange} required disabled={isLoading} />

@@ -33,6 +33,9 @@ def create_app():
     from app.StudentSignup import StudentSignup_bp
     app.register_blueprint(StudentSignup_bp)
 
+    from app.StudentSignin import StudentSignin_bp
+    app.register_blueprint(StudentSignin_bp)
+
     # Import models before creating tables
     from . import models
     

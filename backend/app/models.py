@@ -1,5 +1,6 @@
 from .extensions import db
 from datetime import datetime, timedelta, timezone
+
 class studentAuth(db.Model):
     id = db.Column(db.Integer,primary_key = True)
     mailId = db.Column(db.String(100),nullable = False)
