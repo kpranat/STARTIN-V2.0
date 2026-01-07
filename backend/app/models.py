@@ -1,11 +1,12 @@
 from .extensions import db
 from datetime import datetime, timedelta, timezone
 
+#================================= Student Auth Table ========================================
 class studentAuth(db.Model):
     id = db.Column(db.Integer,primary_key = True)
     mailId = db.Column(db.String(100),nullable = False)
     password = db.Column(db.String(500),nullable=False)
-    
+#=============================== OTP Verification Table (for both) ===========================    
 class otpVerification(db.Model):
     id = db.Column(db.Integer,primary_key = True)
     otp = db.Column(db.String(6), nullable=False)
@@ -16,3 +17,8 @@ class otpVerification(db.Model):
         self.email = email
         self.otp = otp
         self.expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
+#============================= Company Auth Table ======================================
+class companyAuth(db.Model):
+    id = db.Column(db.Integer,primary_key = True)
+    email =db.Column(db.String(255),nullable = False)
+    password = db.Column(db.String(255),nullable = False)

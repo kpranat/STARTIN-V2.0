@@ -33,7 +33,13 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Token expired or invalid
       removeToken();
-      window.location.href = '/student-login';
+      // Redirect to appropriate login based on current path
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/company')) {
+        window.location.href = '/company/login';
+      } else {
+        window.location.href = '/student-login';
+      }
     }
     return Promise.reject(error);
   }
@@ -57,6 +63,18 @@ export const connectToBackend = async (actionType: string, data: any) => {
         
       case 'student_login':
         response = await axios.post(`${API_BASE_URL}/auth/StudentLogin`, data);
+        return response.data;
+        
+      case 'company_signup':
+        response = await axios.post(`${API_BASE_URL}/auth/CompanySignup`, data);
+        return response.data;
+        
+      case 'company_verify_otp':
+        response = await axios.post(`${API_BASE_URL}/auth/CompanyVerifyOTP`, data);
+        return response.data;
+        
+      case 'company_login':
+        response = await axios.post(`${API_BASE_URL}/auth/CompanyLogin`, data);
         return response.data;
         
       default:
