@@ -7,7 +7,6 @@ const StudentSignup = () => {
   const navigate = useNavigate(); 
   const { login } = useAuth();
   const [step, setStep] = useState(1); // 1: signup form, 2: OTP verification
-  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,19 +22,18 @@ const StudentSignup = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    
+
     try {
       // Send data to backend
       const response = await connectToBackend('student_signup', formData);
 
       // Backend returns { message: "OTP sent successfully" } on success
       if (response.message) {
-        setEmail(formData.email);
-        setSuccessMessage('Verification email sent! Please check your inbox.');
+        setSuccessMessage(`Verification email sent! Please check your inbox. OTP: ${response.otp}`);
         
         // Show success message for 2 seconds before moving to OTP step
         setTimeout(() => {
@@ -156,7 +154,7 @@ const StudentSignup = () => {
           textAlign: 'center'
         }}>{successMessage}</div>
       )}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSignup}>
         <input name="name" placeholder="Full Name" onChange={handleChange} required disabled={isLoading} />
         <input name="email" type="email" placeholder="Email" onChange={handleChange} required disabled={isLoading} />
         <input name="password" type="password" placeholder="Password" onChange={handleChange} required disabled={isLoading} />
