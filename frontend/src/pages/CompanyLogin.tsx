@@ -1,51 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { connectToBackend } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import '../App.css';
 
 const CompanyLogin: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [error, setError] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(''); // Clear error on input change
   };
 
-  // FIX 1: Added 'async' keyword here
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
+    setError('');
     
-    // FIX 2: The 'try' block is now correctly inside the function
     try {
       const response = await connectToBackend('company_login', formData);
       
       if (response.success && response.token) {
-        // Store token
-        localStorage.setItem('companyToken', response.token);
-        
-        // Show local redirecting state (optional overlay)
+        // Store token and login
+        login(response.token);
         setRedirecting(true);
-
-        // Navigate to the loading page we created, then to profile
+        // Small delay for smooth transition
         setTimeout(() => {
-            navigate('/loading', { state: { target: '/company/profile' } });
-        }, 1000);
-
+          navigate('/company/profile');
+        }, 800);
       } else {
-        setError(response.message || 'Invalid credentials');
+        setError(response.message || 'Login failed');
         setLoading(false);
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      setError('Server error. Please try again later.');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
+      setError(errorMessage);
+      console.error('Login error:', err);
       setLoading(false);
     }
   };
@@ -89,79 +89,79 @@ const CompanyLogin: React.FC = () => {
       }</style>
 
       <div className="landing-container">
-        {/* Back Button */}
-        <div style={{ textAlign: 'left', marginBottom: '20px' }}>
-          <button 
-            onClick={() => navigate('/role-selection')}
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              color: '#555', 
-              cursor: 'pointer', 
-              display: 'flex', 
-              alignItems: 'center',
-              gap: '5px',
-              fontSize: '0.9rem' 
-            }}
-          >
-            ← Back to Role Selection
-          </button>
-        </div>
-
-        <div className="form-container card">
-          <h2 style={{ marginBottom: '20px', color: '#0f766e' }}>Company Login</h2>
-
-          {/* Display error messages */}
-          {error && (
-            <div style={{ 
-              background: '#fee', 
-              color: '#c33', 
-              padding: '10px', 
-              borderRadius: '5px', 
-              marginBottom: '15px',
-              fontSize: '0.9rem'
-            }}>
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <div style={{ textAlign: 'left', marginBottom: '15px' }}>
-              <input 
-                type="email" 
-                name="email" 
-                placeholder="company@example.com" 
-                value={formData.email} 
-                onChange={handleChange} 
-                required 
-                disabled={loading}
-              />
-            </div>
-            <div style={{ textAlign: 'left', marginBottom: '20px' }}>
-              <input 
-                type="password" 
-                name="password" 
-                placeholder="Password" 
-                value={formData.password} 
-                onChange={handleChange} 
-                required 
-                disabled={loading}
-              />
-            </div>
-            <button 
-              type="submit" 
-              className="btn" 
-              style={{ backgroundColor: '#0f766e', width: '100%' }}
-              disabled={loading}
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-          </form>
-          <p style={{ marginTop: '15px', fontSize: '0.9rem' }}>
-            New Company? <Link to="/company/signup" className="link">Register Here</Link>
-          </p>
-        </div>
+      {/* Back Button */}
+      <div style={{ textAlign: 'left', marginBottom: '20px' }}>
+        <button 
+          onClick={() => navigate('/role-selection')}
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            color: '#555', 
+            cursor: 'pointer', 
+            display: 'flex', 
+            alignItems: 'center',
+            gap: '5px',
+            fontSize: '0.9rem' 
+          }}
+        >
+          ← Back to Role Selection
+        </button>
       </div>
+
+      <div className="form-container card">
+        <h2 style={{ marginBottom: '20px', color: '#0f766e' }}>Company Login</h2>
+
+        {/* Display error messages */}
+        {error && (
+          <div style={{ 
+            background: '#fee', 
+            color: '#c33', 
+            padding: '10px', 
+            borderRadius: '5px', 
+            marginBottom: '15px',
+            fontSize: '0.9rem'
+          }}>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ textAlign: 'left', marginBottom: '15px' }}>
+            <input 
+              type="email" 
+              name="email" 
+              placeholder="company@example.com" 
+              value={formData.email} 
+              onChange={handleChange} 
+              required 
+              disabled={loading}
+            />
+          </div>
+          <div style={{ textAlign: 'left', marginBottom: '20px' }}>
+            <input 
+              type="password" 
+              name="password" 
+              placeholder="Password" 
+              value={formData.password} 
+              onChange={handleChange} 
+              required 
+              disabled={loading}
+            />
+          </div>
+          <button 
+            type="submit" 
+            className="btn" 
+            style={{ backgroundColor: '#0f766e', width: '100%' }}
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+        <p style={{ marginTop: '15px', fontSize: '0.9rem' }}>
+          New Company? <Link to="/company/signup" className="link">Register Here</Link>
+        </p>
+      </div>
+    </div>
     </>
   );
 };

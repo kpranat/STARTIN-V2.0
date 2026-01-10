@@ -33,14 +33,10 @@ def StudentSignUp():
     db.session.add(otp_data)
     db.session.commit()
     # Send email============================================
-    try:
-        msg = Message("Your OTP Code for STARTIN is", recipients=[email])
-        msg.body = f"Your OTP is {otp}. Valid for 10 minutes."
-        mail.send(msg)
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-        # For testing, continue without email
-    return jsonify({"message": "OTP sent successfully", "otp": otp})  # Include OTP for testing
+    msg = Message("Your OTP Code for STARTIN is", recipients=[email])
+    msg.body = f"Your OTP is {otp}. Valid for 10 minutes."
+    mail.send(msg)
+    return jsonify({"message": "OTP sent successfully"})
 
 #HANDLE OTP VERIFICATION ===========================================================================    
 @StudentSignup_bp.route("/auth/VerifyOTP",methods = ['POST'])

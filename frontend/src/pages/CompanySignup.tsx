@@ -45,7 +45,7 @@ const CompanySignup = () => {
       const response = await connectToBackend('company_signup', formData);
       
       if (response.message) {
-        setSuccessMessage(`${response.message}. OTP: ${response.otp}`);
+        setSuccessMessage(response.message);
         setStep('otp'); // Move to OTP verification step
       }
     } catch (err: any) {
