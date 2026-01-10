@@ -2,6 +2,7 @@ import React, { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { connectToBackend } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import LoadingScreen from '../components/LoadingScreen'; 
 import '../App.css';
 
 const CompanyLogin: React.FC = () => {
@@ -13,82 +14,54 @@ const CompanyLogin: React.FC = () => {
     password: ''
   });
 
-  const [loading, setLoading] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(''); // Clear error on input change
+    setError('');
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsLoading(true);
     setError('');
-    
+
     try {
       const response = await connectToBackend('company_login', formData);
-      
+
       if (response.success && response.token) {
-        // Store token and login
+        // Save auth token
         login(response.token);
-        setRedirecting(true);
-        // Small delay for smooth transition
+
+        // Smooth loader transition
         setTimeout(() => {
           navigate('/company/profile');
-        }, 800);
+        }, 1200);
       } else {
         setError(response.message || 'Login failed');
-        setLoading(false);
+        setIsLoading(false);
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
-      setError(errorMessage);
       console.error('Login error:', err);
-      setLoading(false);
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      setIsLoading(false);
     }
   };
 
+  // ✅ Fullscreen Loader
+  if (isLoading) {
+    return (
+      <LoadingScreen 
+        text="Accessing Company Portal..." 
+        theme="company" 
+      />
+    );
+  }
+
   return (
-    <>
-      {/* Loading Overlay */}
-      {redirecting && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.7)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999
-        }}>
-          <div style={{
-            width: '50px',
-            height: '50px',
-            border: '5px solid #f3f3f3',
-            borderTop: '5px solid #0f766e',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <p style={{ color: 'white', marginTop: '20px', fontSize: '1.1rem' }}>
-            Login Successful! Redirecting...
-          </p>
-        </div>
-      )}
+    <div className="landing-container">
 
-      <style>{
-        `@keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }`
-      }</style>
-
-      <div className="landing-container">
       {/* Back Button */}
       <div style={{ textAlign: 'left', marginBottom: '20px' }}>
         <button 
@@ -109,9 +82,11 @@ const CompanyLogin: React.FC = () => {
       </div>
 
       <div className="form-container card">
-        <h2 style={{ marginBottom: '20px', color: '#0f766e' }}>Company Login</h2>
+        <h2 style={{ marginBottom: '20px', color: '#0f766e' }}>
+          Company Login
+        </h2>
 
-        {/* Display error messages */}
+        {/* Error Message */}
         {error && (
           <div style={{ 
             background: '#fee', 
@@ -134,9 +109,10 @@ const CompanyLogin: React.FC = () => {
               value={formData.email} 
               onChange={handleChange} 
               required 
-              disabled={loading}
+              disabled={isLoading}
             />
           </div>
+
           <div style={{ textAlign: 'left', marginBottom: '20px' }}>
             <input 
               type="password" 
@@ -145,24 +121,25 @@ const CompanyLogin: React.FC = () => {
               value={formData.password} 
               onChange={handleChange} 
               required 
-              disabled={loading}
+              disabled={isLoading}
             />
           </div>
+
           <button 
             type="submit" 
             className="btn" 
             style={{ backgroundColor: '#0f766e', width: '100%' }}
-            disabled={loading}
+            disabled={isLoading}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            Login
           </button>
         </form>
+
         <p style={{ marginTop: '15px', fontSize: '0.9rem' }}>
           New Company? <Link to="/company/signup" className="link">Register Here</Link>
         </p>
       </div>
     </div>
-    </>
   );
 };
 
