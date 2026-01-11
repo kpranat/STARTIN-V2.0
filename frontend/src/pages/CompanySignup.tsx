@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { connectToBackend } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { setCompanyId } from '../utils/auth';
 import '../App.css';
 
 const CompanySignup = () => {
@@ -73,10 +74,16 @@ const CompanySignup = () => {
       if (response.token) {
         // Store token and login
         login(response.token);
+        
+        // Store company ID from response
+        if (response.company_id) {
+          setCompanyId(response.company_id);
+        }
+        
         setRedirecting(true);
-        // Small delay for smooth transition
+        // Navigate to profile setup checker
         setTimeout(() => {
-          navigate('/company/profile');
+          navigate('/company/profile-check');
         }, 800);
       }
     } catch (err: any) {

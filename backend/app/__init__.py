@@ -16,9 +16,10 @@ def create_app():
         r"/*": {
             "origins": ["http://localhost:5173", "http://127.0.0.1:5173"],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"]
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True
         }
-    })
+    }, automatic_options=True)
 
     #sqlite config
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"

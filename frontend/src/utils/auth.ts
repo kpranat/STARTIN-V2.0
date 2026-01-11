@@ -2,6 +2,7 @@
 
 const TOKEN_KEY = 'jwt_token';
 const USER_KEY = 'user_data';
+const COMPANY_ID_KEY = 'company_id';
 
 /**
  * Store JWT token in sessionStorage (clears on tab close)
@@ -24,6 +25,7 @@ export const getToken = (): string | null => {
 export const removeToken = (): void => {
   sessionStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(USER_KEY);
+  sessionStorage.removeItem(COMPANY_ID_KEY);
 };
 
 /**
@@ -90,4 +92,18 @@ export const setUserData = (data: any): void => {
 export const getUserData = (): any => {
   const data = sessionStorage.getItem(USER_KEY);
   return data ? JSON.parse(data) : null;
+};
+
+/**
+ * Store company ID in sessionStorage
+ */
+export const setCompanyId = (companyId: string | number): void => {
+  sessionStorage.setItem(COMPANY_ID_KEY, companyId.toString());
+};
+
+/**
+ * Get company ID from sessionStorage
+ */
+export const getCompanyId = (): string | null => {
+  return sessionStorage.getItem(COMPANY_ID_KEY);
 };

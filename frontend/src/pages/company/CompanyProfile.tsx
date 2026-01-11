@@ -1,14 +1,24 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import CompanyNavbar from '../../components/CompanyNavbar';
+import { getCompanyId } from '../../utils/auth';
+import { api } from '../../services/api';
 import '../../App.css'; 
 
 const CompanyProfile: React.FC = () => {
-  const [isEditing, setIsEditing] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isSetupMode = location.pathname === '/company/profile-setup';
+  
+  const [isEditing, setIsEditing] = useState(isSetupMode);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   
   const [companyData, setCompanyData] = useState({
     name: '',
     website: '',
-    description: '',
+    about: '',
     location: ''
   });
 
@@ -18,27 +28,81 @@ const CompanyProfile: React.FC = () => {
     { id: 2, title: 'Marketing Associate', date: '2023-11-05', status: 'Active' },
   ]);
 
-  // Load from LocalStorage on mount
+  // Load from backend on mount (for edit mode)
   useEffect(() => {
-    const saved = localStorage.getItem('companyProfile');
-    if (saved) {
-      setCompanyData(JSON.parse(saved));
-      setIsEditing(false);
-    }
-  }, []);
+    const loadProfile = async () => {
+      if (!isSetupMode) {
+        try {
+          const companyId = getCompanyId();
+          if (companyId) {
+            const response = await api.company.checkProfile(companyId);
+            if (response.data.success && response.data.hasProfile) {
+              const profile = response.data.profile;
+              setCompanyData({
+                name: profile.name || '',
+                website: profile.website || '',
+                about: profile.about || '',
+                location: profile.location || ''
+              });
+              setIsEditing(false);
+            }
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error);
+        }
+      }
+    };
+
+    loadProfile();
+  }, [isSetupMode]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setCompanyData({ ...companyData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // ---------------------------------------------------------
-    // BACKEND INTEGRATION: POST /api/company/profile
-    // ---------------------------------------------------------
-    localStorage.setItem('companyProfile', JSON.stringify(companyData));
-    setIsEditing(false);
-    alert("Company Profile Saved!");
+    setError('');
+    setSuccess('');
+    setLoading(true);
+    
+    try {
+      const companyId = getCompanyId();
+      if (!companyId) {
+        setError('Company ID not found. Please login again.');
+        setLoading(false);
+        return;
+      }
+
+      const payload = {
+        company_id: companyId,
+        name: companyData.name,
+        website: companyData.website,
+        location: companyData.location,
+        about: companyData.about
+      };
+
+      let response;
+      if (isSetupMode) {
+        // Setup new profile
+        response = await api.company.setupProfile(payload);
+        setSuccess('Profile created successfully!');
+        setTimeout(() => {
+          navigate('/company/home');
+        }, 1500);
+      } else {
+        // Update existing profile
+        response = await api.company.updateProfile(payload);
+        setSuccess('Profile updated successfully!');
+        setIsEditing(false);
+      }
+      
+    } catch (err: any) {
+      console.error('Error saving profile:', err);
+      setError(err.response?.data?.message || 'Failed to save profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,30 +114,104 @@ const CompanyProfile: React.FC = () => {
           {isEditing ? (
             /* EDIT FORM */
             <>
-              <h2>Setup Company Profile</h2>
+              <h2>{isSetupMode ? 'Setup Company Profile' : 'Edit Company Profile'}</h2>
+              
+              {error && (
+                <div style={{ 
+                  background: '#fee', 
+                  color: '#c33', 
+                  padding: '10px', 
+                  borderRadius: '5px', 
+                  marginBottom: '15px' 
+                }}>
+                  {error}
+                </div>
+              )}
+              
+              {success && (
+                <div style={{ 
+                  background: '#d1fae5', 
+                  color: '#065f46', 
+                  padding: '10px', 
+                  borderRadius: '5px', 
+                  marginBottom: '15px' 
+                }}>
+                  {success}
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <label>Company Name</label>
-                  <input type="text" name="name" value={companyData.name} onChange={handleChange} placeholder="e.g. TechCorp Solutions" required />
+                  <label>Company Name *</label>
+                  <input 
+                    type="text" 
+                    name="name" 
+                    value={companyData.name} 
+                    onChange={handleChange} 
+                    placeholder="e.g. TechCorp Solutions" 
+                    required 
+                    disabled={loading}
+                  />
                 </div>
 
                 <div className="form-group">
-                  <label>Website</label>
-                  <input type="text" name="website" value={companyData.website} onChange={handleChange} placeholder="https://..." />
+                  <label>Website *</label>
+                  <input 
+                    type="text" 
+                    name="website" 
+                    value={companyData.website} 
+                    onChange={handleChange} 
+                    placeholder="https://..." 
+                    required
+                    disabled={loading}
+                  />
                 </div>
 
                 <div className="form-group">
-                  <label>Location</label>
-                  <input type="text" name="location" value={companyData.location} onChange={handleChange} placeholder="e.g. Bangalore, India" />
+                  <label>Location *</label>
+                  <input 
+                    type="text" 
+                    name="location" 
+                    value={companyData.location} 
+                    onChange={handleChange} 
+                    placeholder="e.g. Bangalore, India" 
+                    required
+                    disabled={loading}
+                  />
                 </div>
 
                 <div className="form-group">
-                  <label>About the Company</label>
-                  <textarea name="description" value={companyData.description} onChange={handleChange} rows={4} placeholder="We are a leading tech firm..."></textarea>
+                  <label>About the Company *</label>
+                  <textarea 
+                    name="about" 
+                    value={companyData.about} 
+                    onChange={handleChange} 
+                    rows={4} 
+                    placeholder="We are a leading tech firm..."
+                    required
+                    disabled={loading}
+                  ></textarea>
                 </div>
 
                 <div className="btn-save-container">
-                  <button type="submit" className="btn-save">Save Profile</button>
+                  <button 
+                    type="submit" 
+                    className="btn-save"
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : (isSetupMode ? 'Create Profile' : 'Save Changes')}
+                  </button>
+                  {!isSetupMode && (
+                    <button 
+                      type="button" 
+                      onClick={() => setIsEditing(false)} 
+                      className="btn-edit"
+                      style={{ marginLeft: '10px' }}
+                      disabled={loading}
+                    >
+                      Cancel
+                    </button>
+                  )}
                 </div>
               </form>
             </>
@@ -89,8 +227,13 @@ const CompanyProfile: React.FC = () => {
               </div>
 
               <div className="view-section">
+                <span className="view-label">Location</span>
+                <p className="view-content">{companyData.location || "No location added."}</p>
+              </div>
+
+              <div className="view-section">
                 <span className="view-label">About</span>
-                <p className="view-content">{companyData.description || "No description added."}</p>
+                <p className="view-content">{companyData.about || "No description added."}</p>
               </div>
 
               {/* Previous Jobs Section */}

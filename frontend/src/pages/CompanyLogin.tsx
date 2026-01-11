@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { connectToBackend } from '../services/api';
+import { setCompanyId } from '../utils/auth';
 import '../App.css';
 
 const CompanyLogin: React.FC = () => {
@@ -31,12 +32,17 @@ const CompanyLogin: React.FC = () => {
         // Store token
         localStorage.setItem('companyToken', response.token);
         
+        // Store company ID from response
+        if (response.company_id) {
+          setCompanyId(response.company_id);
+        }
+        
         // Show local redirecting state (optional overlay)
         setRedirecting(true);
 
-        // Navigate to the loading page we created, then to profile
+        // Navigate to profile setup checker
         setTimeout(() => {
-            navigate('/loading', { state: { target: '/company/profile' } });
+            navigate('/company/profile-check');
         }, 1000);
 
       } else {

@@ -5,6 +5,7 @@ import LoadingTransition from './pages/LoadingTransition';
 
 // Components
 // import ProtectedRoute from './components/ProtectedRoute'; // Uncomment if you have this component
+import CompanyProfileCheck from './components/CompanyProfileCheck';
 
 // General Pages
 import UniversitySelect from './pages/UniversitySelect';
@@ -53,6 +54,8 @@ function App() {
         <Route path="/student/profile" element={<StudentProfile />} />
 
         {/* Step 5: Company Dashboard */}
+        <Route path="/company/profile-check" element={<CompanyProfileCheck />} />
+        <Route path="/company/profile-setup" element={<CompanyProfile />} />
         <Route path="/company/profile" element={<CompanyProfile />} />
         <Route path="/company/post-job" element={<CompanyPostJob />} />
         <Route path="/company/applicants" element={<CompanyApplicants />} />

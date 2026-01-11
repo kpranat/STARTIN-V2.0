@@ -99,8 +99,13 @@ export const api = {
   
   // Company endpoints
   company: {
+    checkProfile: (companyId: string | number) => 
+      apiClient.post('/check/CompanyProfile', { company_id: companyId }),
+    setupProfile: (data: any) => 
+      apiClient.post('/setup/CompanyProfile', data),
+    updateProfile: (data: any) => 
+      apiClient.post('/update/CompanyProfile', data),
     getProfile: () => apiClient.get('/company/profile'),
-    updateProfile: (data: any) => apiClient.put('/company/profile', data),
     postJob: (data: any) => apiClient.post('/company/jobs', data),
     getJobs: () => apiClient.get('/company/jobs'),
     getApplicants: (jobId: string) => apiClient.get(`/company/jobs/${jobId}/applicants`),
