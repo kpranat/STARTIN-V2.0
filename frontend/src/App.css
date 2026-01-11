@@ -285,7 +285,7 @@ textarea {
 
 @keyframes ring-spin {
   0% { transform: rotate(0deg); }
-KB100% { transform: rotate(360deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @keyframes fadeIn {
@@ -300,76 +300,6 @@ KB100% { transform: rotate(360deg); }
   font-weight: 500;
   letter-spacing: 0.5px;
   animation: pulseText 2s infinite ease-in-out;
-}
-
-@keyframes pulseText {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-/* --- 10. Loading Screen & Animations --- */
-.loading-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  background-color: var(--bg-page);
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-/* Subtle Gradients based on Theme */
-.loading-screen.student-theme {
-  background: radial-gradient(circle at center, #e0e7ff 0%, #f3f4f6 70%);
-}
-
-.loading-screen.company-theme {
-  background: radial-gradient(circle at center, #ccfbf1 0%, #f3f4f6 70%);
-}
-
-/* Modern Spinner */
-.loader-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(0, 0, 0, 0.05);
-  border-radius: 50%;
-  position: relative;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 20px;
-}
-
-/* Dynamic Spinner Colors */
-.student-theme .loader-spinner {
-  border-top-color: var(--primary);
-  border-left-color: var(--primary);
-}
-
-.company-theme .loader-spinner {
-  border-top-color: var(--teal);
-  border-left-color: var(--teal);
-}
-
-.loading-text {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
-  animation: pulseText 1.5s ease-in-out infinite;
-}
-
-/* Keyframes */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 @keyframes pulseText {
