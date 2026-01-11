@@ -29,3 +29,12 @@ class CompanyProfile (db.Model):
     website = db.Column(db.String(255),nullable = False)
     location = db.Column(db.String(255),nullable = False)
     about = db.Column(db.String(500),nullable = False)
+#======================= Student Profile ==============================================
+class StudentProfile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    fullName = db.Column(db.String(255), nullable=False)
+    about = db.Column(db.String(1000), nullable=True)
+    skills = db.Column(db.String(500), nullable=True)
+    github = db.Column(db.String(255), nullable=True)
+    linkedin = db.Column(db.String(255), nullable=True)
+    resume = db.Column(db.String(500), nullable=True)  # Store file path or name

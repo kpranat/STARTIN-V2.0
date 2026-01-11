@@ -90,8 +90,17 @@ export const connectToBackend = async (actionType: string, data: any) => {
 export const api = {
   // Student endpoints
   student: {
+    checkProfile: (studentId: string | number) => 
+      apiClient.post('/check/StudentProfile', { student_id: studentId }),
+    setupProfile: (formData: FormData) => 
+      apiClient.post('/setup/StudentProfile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }),
+    updateProfile: (formData: FormData) => 
+      apiClient.post('/update/StudentProfile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }),
     getProfile: () => apiClient.get('/student/profile'),
-    updateProfile: (data: any) => apiClient.put('/student/profile', data),
     getJobs: () => apiClient.get('/student/jobs'),
     applyJob: (jobId: string) => apiClient.post(`/student/jobs/${jobId}/apply`),
     getAppliedJobs: () => apiClient.get('/student/applied-jobs'),

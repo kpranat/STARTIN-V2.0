@@ -3,6 +3,7 @@
 const TOKEN_KEY = 'jwt_token';
 const USER_KEY = 'user_data';
 const COMPANY_ID_KEY = 'company_id';
+const STUDENT_ID_KEY = 'student_id';
 
 /**
  * Store JWT token in sessionStorage (clears on tab close)
@@ -26,6 +27,7 @@ export const removeToken = (): void => {
   sessionStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(USER_KEY);
   sessionStorage.removeItem(COMPANY_ID_KEY);
+  sessionStorage.removeItem(STUDENT_ID_KEY);
 };
 
 /**
@@ -106,4 +108,18 @@ export const setCompanyId = (companyId: string | number): void => {
  */
 export const getCompanyId = (): string | null => {
   return sessionStorage.getItem(COMPANY_ID_KEY);
+};
+
+/**
+ * Store student ID in sessionStorage
+ */
+export const setStudentId = (studentId: string | number): void => {
+  sessionStorage.setItem(STUDENT_ID_KEY, studentId.toString());
+};
+
+/**
+ * Get student ID from sessionStorage
+ */
+export const getStudentId = (): string | null => {
+  return sessionStorage.getItem(STUDENT_ID_KEY);
 };

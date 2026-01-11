@@ -6,6 +6,7 @@ import LoadingTransition from './pages/LoadingTransition';
 // Components
 // import ProtectedRoute from './components/ProtectedRoute'; // Uncomment if you have this component
 import CompanyProfileCheck from './components/CompanyProfileCheck';
+import StudentProfileCheck from './components/StudentProfileCheck';
 
 // General Pages
 import UniversitySelect from './pages/UniversitySelect';
@@ -49,6 +50,8 @@ function App() {
         <Route path="/company/signup" element={<CompanySignup />} />
 
         {/* Step 4: Student Dashboard */}
+        <Route path="/student/profile-check" element={<StudentProfileCheck />} />
+        <Route path="/student/profile-setup" element={<StudentProfile />} />
         <Route path="/student/home" element={<StudentHome />} />
         <Route path="/student/applied-jobs" element={<StudentAppliedJobs />} />
         <Route path="/student/profile" element={<StudentProfile />} />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { connectToBackend } from '../services/api';
+import { setStudentId } from '../utils/auth';
 import '../App.css';
 
 const StudentLogin: React.FC = () => {
@@ -27,12 +28,17 @@ const StudentLogin: React.FC = () => {
         // 1. Store the token
         localStorage.setItem('studentToken', response.token);
 
-        // 2. Show local "success" feedback immediately
+        // 2. Store student ID from response
+        if (response.student_id) {
+          setStudentId(response.student_id);
+        }
+
+        // 3. Show local "success" feedback immediately
         setRedirecting(true);
 
-        // 3. Navigate to the sexy loading page, then to the Student Home
+        // 4. Navigate to profile check
         setTimeout(() => {
-             navigate('/loading', { state: { target: '/student/home' } });
+             navigate('/student/profile-check');
         }, 1000);
 
       } else {

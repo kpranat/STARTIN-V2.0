@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { connectToBackend } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useAuth } from '../context/AuthContext'; 
+import { setStudentId } from '../utils/auth'; 
 
 const StudentSignup = () => {
   const navigate = useNavigate(); 
@@ -66,11 +67,17 @@ const StudentSignup = () => {
       if (response.token) {
         // Store the JWT token using AuthContext
         login(response.token, { email: formData.email });
-        setSuccessMessage('Signup successful! Redirecting to home...');
         
-        // Show success message for 1.5 seconds before navigating
+        // Store student ID from response
+        if (response.student_id) {
+          setStudentId(response.student_id);
+        }
+        
+        setSuccessMessage('Signup successful! Redirecting...');
+        
+        // Navigate to profile check
         setTimeout(() => {
-          navigate('/student/home');
+          navigate('/student/profile-check');
         }, 1500);
       } else {
         setError(response.error || 'Invalid OTP');

@@ -1,9 +1,19 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import StudentNavbar from '../../components/StudentNavbar';
+import { getStudentId } from '../../utils/auth';
+import { api } from '../../services/api';
 import '../../App.css'; 
 
 const StudentProfile: React.FC = () => {
-  const [isEditing, setIsEditing] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isSetupMode = location.pathname === '/student/profile-setup';
+  
+  const [isEditing, setIsEditing] = useState(isSetupMode);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const [formData, setFormData] = useState({
     fullName: '', 
@@ -13,26 +23,38 @@ const StudentProfile: React.FC = () => {
     linkedin: ''
   });
   
-  // We store the file name separately for persistence simulation
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeName, setResumeName] = useState<string>(""); 
 
   // 1. LOAD DATA ON COMPONENT MOUNT
   useEffect(() => {
-    // Check if profile data exists in browser storage
-    const savedData = localStorage.getItem('studentProfile');
-    
-    if (savedData) {
-      const parsedData = JSON.parse(savedData);
-      setFormData(parsedData);
-      
-      // If we have a resume name saved, load that too
-      const savedResume = localStorage.getItem('studentResumeName');
-      if (savedResume) setResumeName(savedResume);
+    const loadProfile = async () => {
+      if (!isSetupMode) {
+        try {
+          const studentId = getStudentId();
+          if (studentId) {
+            const response = await api.student.checkProfile(studentId);
+            if (response.data.success && response.data.hasProfile) {
+              const profile = response.data.profile;
+              setFormData({
+                fullName: profile.fullName || '',
+                about: profile.about || '',
+                skills: profile.skills || '',
+                github: profile.github || '',
+                linkedin: profile.linkedin || ''
+              });
+              setResumeName(profile.resume || '');
+              setIsEditing(false);
+            }
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error);
+        }
+      }
+    };
 
-      // If data exists, go straight to View Mode
-      setIsEditing(false);
-    }
-  }, []);
+    loadProfile();
+  }, [isSetupMode]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -41,21 +63,60 @@ const StudentProfile: React.FC = () => {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setResumeFile(file);
       setResumeName(file.name);
-      // Note: We can't easily save the actual File object in localStorage, 
-      // so we just save the name to simulate it.
-      localStorage.setItem('studentResumeName', file.name);
     }
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
     
-    // 2. SAVE DATA TO LOCAL STORAGE
-    localStorage.setItem('studentProfile', JSON.stringify(formData));
-    
-    setIsEditing(false); 
-    alert("Profile saved successfully!");
+    try {
+      const studentId = getStudentId();
+      if (!studentId) {
+        setError('Student ID not found. Please login again.');
+        setLoading(false);
+        return;
+      }
+
+      // Create FormData for multipart/form-data submission
+      const formDataToSend = new FormData();
+      formDataToSend.append('student_id', studentId);
+      formDataToSend.append('fullName', formData.fullName);
+      formDataToSend.append('about', formData.about);
+      formDataToSend.append('skills', formData.skills);
+      formDataToSend.append('github', formData.github);
+      formDataToSend.append('linkedin', formData.linkedin);
+      
+      // Add resume file if selected
+      if (resumeFile) {
+        formDataToSend.append('resume', resumeFile);
+      }
+
+      let response;
+      if (isSetupMode) {
+        // Setup new profile
+        response = await api.student.setupProfile(formDataToSend);
+        setSuccess('Profile created successfully!');
+        setTimeout(() => {
+          navigate('/student/home');
+        }, 1500);
+      } else {
+        // Update existing profile
+        response = await api.student.updateProfile(formDataToSend);
+        setSuccess('Profile updated successfully!');
+        setIsEditing(false);
+      }
+      
+    } catch (err: any) {
+      console.error('Error saving profile:', err);
+      setError(err.response?.data?.message || 'Failed to save profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,10 +128,35 @@ const StudentProfile: React.FC = () => {
           {isEditing ? (
             /* ================= EDIT MODE ================= */
             <>
-              <h2>Setup Your Profile</h2>
+              <h2>{isSetupMode ? 'Setup Your Profile' : 'Edit Your Profile'}</h2>
+              
+              {error && (
+                <div style={{ 
+                  background: '#fee', 
+                  color: '#c33', 
+                  padding: '10px', 
+                  borderRadius: '5px', 
+                  marginBottom: '15px' 
+                }}>
+                  {error}
+                </div>
+              )}
+              
+              {success && (
+                <div style={{ 
+                  background: '#d1fae5', 
+                  color: '#065f46', 
+                  padding: '10px', 
+                  borderRadius: '5px', 
+                  marginBottom: '15px' 
+                }}>
+                  {success}
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <label>Full Name</label>
+                  <label>Full Name *</label>
                   <input 
                     type="text" 
                     name="fullName" 
@@ -78,6 +164,7 @@ const StudentProfile: React.FC = () => {
                     placeholder="e.g. Jane Doe" 
                     onChange={handleInputChange} 
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -88,6 +175,7 @@ const StudentProfile: React.FC = () => {
                     value={formData.about}
                     placeholder="I am a passionate developer..." 
                     onChange={handleInputChange}
+                    disabled={loading}
                   ></textarea>
                 </div>
 
@@ -98,7 +186,8 @@ const StudentProfile: React.FC = () => {
                     name="skills" 
                     value={formData.skills}
                     placeholder="Java, Python, React..." 
-                    onChange={handleInputChange} 
+                    onChange={handleInputChange}
+                    disabled={loading}
                   />
                 </div>
 
@@ -109,8 +198,9 @@ const StudentProfile: React.FC = () => {
                           type="text" 
                           name="github" 
                           value={formData.github}
-                          placeholder="github.com/..." 
-                          onChange={handleInputChange} 
+                          placeholder="github.com/username" 
+                          onChange={handleInputChange}
+                          disabled={loading}
                         />
                     </div>
                     <div className="form-group">
@@ -119,26 +209,49 @@ const StudentProfile: React.FC = () => {
                           type="text" 
                           name="linkedin" 
                           value={formData.linkedin}
-                          placeholder="linkedin.com/..." 
-                          onChange={handleInputChange} 
+                          placeholder="linkedin.com/in/username" 
+                          onChange={handleInputChange}
+                          disabled={loading}
                         />
                     </div>
                 </div>
 
                 <div className="form-group">
-                  <label>Upload Resume (PDF)</label>
+                  <label>Upload Resume (PDF, DOC, DOCX)</label>
                   <div className="file-upload-box">
                     <input 
                       type="file" 
-                      accept=".pdf" 
-                      onChange={handleFileChange} 
+                      accept=".pdf,.doc,.docx" 
+                      onChange={handleFileChange}
+                      disabled={loading}
                     />
-                    {resumeName && <p style={{marginTop: '10px', color: 'green', fontSize: '0.9rem'}}>Selected: {resumeName}</p>}
+                    {resumeName && (
+                      <p style={{marginTop: '10px', color: 'green', fontSize: '0.9rem'}}>
+                        📄 {resumeName}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="btn-save-container">
-                  <button type="submit" className="btn-save">Save Profile</button>
+                  <button 
+                    type="submit" 
+                    className="btn-save"
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : (isSetupMode ? 'Create Profile' : 'Save Changes')}
+                  </button>
+                  {!isSetupMode && (
+                    <button 
+                      type="button" 
+                      onClick={() => setIsEditing(false)} 
+                      className="btn-edit"
+                      style={{ marginLeft: '10px' }}
+                      disabled={loading}
+                    >
+                      Cancel
+                    </button>
+                  )}
                 </div>
               </form>
             </>
