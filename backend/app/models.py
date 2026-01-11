@@ -22,3 +22,10 @@ class companyAuth(db.Model):
     id = db.Column(db.Integer,primary_key = True)
     email =db.Column(db.String(255),nullable = False)
     password = db.Column(db.String(255),nullable = False)
+#======================= Company Profile ==============================================
+class CompanyProfile (db.Model):
+    id = db.Column(db.Integer,primary_key = True)
+    name= db.Column(db.String(255),nullable = False)
+    website = db.Column(db.String(255),nullable = False)
+    location = db.Column(db.String(255),nullable = False)
+    about = db.Column(db.String(500),nullable = False)

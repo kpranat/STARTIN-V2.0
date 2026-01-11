@@ -42,6 +42,9 @@ def create_app():
     from app.CompanySignin import CompanySignin_bp
     app.register_blueprint(CompanySignin_bp)
 
+    from app.CompanyProfile import CompanyProfileSetup_bp
+    app.register_blueprint(CompanyProfileSetup_bp)
+
     # Import models before creating tables
     from . import models
     

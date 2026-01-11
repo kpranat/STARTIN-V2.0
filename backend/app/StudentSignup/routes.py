@@ -94,7 +94,11 @@ def VerifyOTP():
             algorithm="HS256"
         )
 
-        return jsonify({"message": "OTP verified successfully", "token": token}), 200
+        return jsonify({
+            "message": "OTP verified successfully", 
+            "token": token,
+            "student_id": studentAuth_data.id
+        }), 200
         
     except Exception as e:
         db.session.rollback()

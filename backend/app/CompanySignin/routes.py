@@ -34,7 +34,8 @@ def StudentSignin():
     return jsonify({
         "success": True,
         "message": "Login Successful",
-        "token": token
+        "token": token,
+        "company_id": user.id
     }), 200
     
 
