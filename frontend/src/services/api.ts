@@ -101,7 +101,7 @@ export const api = {
         headers: { 'Content-Type': 'multipart/form-data' }
       }),
     getProfile: () => apiClient.get('/student/profile'),
-    getJobs: () => apiClient.get('/student/jobs'),
+    getJobs: () => apiClient.get('/get/JobDetails'),
     applyJob: (jobId: string) => apiClient.post(`/student/jobs/${jobId}/apply`),
     getAppliedJobs: () => apiClient.get('/student/applied-jobs'),
   },
@@ -115,8 +115,8 @@ export const api = {
     updateProfile: (data: any) => 
       apiClient.post('/update/CompanyProfile', data),
     getProfile: () => apiClient.get('/company/profile'),
-    postJob: (data: any) => apiClient.post('/company/jobs', data),
-    getJobs: () => apiClient.get('/company/jobs'),
+    postJob: (data: any) => apiClient.post('/set/JobDetails', data),
+    getJobs: (data: any) => apiClient.post('/get/CompanyJobs', data),
     getApplicants: (jobId: string) => apiClient.get(`/company/jobs/${jobId}/applicants`),
   },
 };

@@ -49,6 +49,9 @@ def create_app():
     from app.StudentProfile import StudentProfile_bp
     app.register_blueprint(StudentProfile_bp)
 
+    from app.JobDetails import JobDetails_bp
+    app.register_blueprint(JobDetails_bp)
+
     # Import models before creating tables
     from . import models
     

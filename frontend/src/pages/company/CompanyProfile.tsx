@@ -23,10 +23,8 @@ const CompanyProfile: React.FC = () => {
   });
 
   // Mock Data: Previous jobs posted by this company
-  const [previousJobs, setPreviousJobs] = useState([
-    { id: 1, title: 'Frontend Developer Intern', date: '2023-10-12', status: 'Closed' },
-    { id: 2, title: 'Marketing Associate', date: '2023-11-05', status: 'Active' },
-  ]);
+  const [previousJobs, setPreviousJobs] = useState([]);
+  const [jobsLoading, setJobsLoading] = useState(false);
 
   // Load from backend on mount (for edit mode)
   useEffect(() => {
@@ -54,6 +52,30 @@ const CompanyProfile: React.FC = () => {
     };
 
     loadProfile();
+  }, [isSetupMode]);
+
+  // Load company jobs
+  useEffect(() => {
+    const loadJobs = async () => {
+      if (!isSetupMode) {
+        try {
+          setJobsLoading(true);
+          const companyId = getCompanyId();
+          if (companyId) {
+            const response = await api.company.getJobs({ company_id: companyId });
+            if (response.data.success) {
+              setPreviousJobs(response.data.data);
+            }
+          }
+        } catch (error) {
+          console.error('Error loading jobs:', error);
+        } finally {
+          setJobsLoading(false);
+        }
+      }
+    };
+
+    loadJobs();
   }, [isSetupMode]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -239,23 +261,29 @@ const CompanyProfile: React.FC = () => {
               {/* Previous Jobs Section */}
               <div style={{ marginTop: '40px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
                 <h3>Previous Job Listings</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {previousJobs.map(job => (
-                    <div key={job.id} style={{ padding: '15px', background: '#f8f9fa', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <strong>{job.title}</strong>
-                        <div style={{ fontSize: '0.85rem', color: '#666' }}>Posted: {job.date}</div>
+                {jobsLoading ? (
+                  <p>Loading jobs...</p>
+                ) : previousJobs.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {previousJobs.map((job: any) => (
+                      <div key={job.id} style={{ padding: '15px', background: '#f8f9fa', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <strong>{job.title}</strong>
+                          <div style={{ fontSize: '0.85rem', color: '#666' }}>Posted: {new Date(job.enddate).toLocaleDateString()}</div>
+                        </div>
+                        <span style={{ 
+                          padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold',
+                          backgroundColor: job.status === 'Active' ? '#d1fae5' : '#e5e7eb',
+                          color: job.status === 'Active' ? '#065f46' : '#374151'
+                        }}>
+                          {job.status}
+                        </span>
                       </div>
-                      <span style={{ 
-                        padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold',
-                        backgroundColor: job.status === 'Active' ? '#d1fae5' : '#e5e7eb',
-                        color: job.status === 'Active' ? '#065f46' : '#374151'
-                      }}>
-                        {job.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p>No jobs posted yet.</p>
+                )}
               </div>
 
             </div>

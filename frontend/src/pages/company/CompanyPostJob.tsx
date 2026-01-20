@@ -1,30 +1,68 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import CompanyNavbar from '../../components/CompanyNavbar';
+import { api } from '../../services/api';
+import { getCompanyId } from '../../utils/auth';
 import '../../App.css'; 
 
 const CompanyPostJob: React.FC = () => {
   const [jobData, setJobData] = useState({
     title: '',
     type: 'Internship',
-    stipend: '',
+    salary: '',
     description: '',
-    requirements: ''
+    requirements: '',
+    enddate: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setJobData({ ...jobData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // ---------------------------------------------------------
-    // BACKEND INTEGRATION: POST /api/jobs/create
-    // ---------------------------------------------------------
-    console.log("Job Posted:", jobData);
-    alert("Job Posted Successfully!");
-    
-    // Reset form
-    setJobData({ title: '', type: 'Internship', stipend: '', description: '', requirements: '' });
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const companyId = getCompanyId();
+      if (!companyId) {
+        setError('Company ID not found. Please login again.');
+        setLoading(false);
+        return;
+      }
+
+      const jobPayload = {
+        ...jobData,
+        companyid: parseInt(companyId)
+      };
+
+      const response = await api.company.postJob(jobPayload);
+
+      if (response.data.success) {
+        setSuccess('Job posted successfully!');
+        // Reset form
+        setJobData({
+          title: '',
+          type: 'Internship',
+          salary: '',
+          description: '',
+          requirements: '',
+          enddate: ''
+        });
+      } else {
+        setError(response.data.message || 'Failed to post job');
+      }
+    } catch (err) {
+      console.error('Error posting job:', err);
+      setError('Failed to post job. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,6 +71,9 @@ const CompanyPostJob: React.FC = () => {
       <div className="page-container">
         <div className="profile-container" style={{ maxWidth: '800px' }}>
           <h2 style={{ textAlign: 'center', color: '#0f766e' }}>Post a New Job</h2>
+          
+          {error && <div style={{ color: 'red', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
+          {success && <div style={{ color: 'green', marginBottom: '1rem', textAlign: 'center' }}>{success}</div>}
           
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -50,9 +91,14 @@ const CompanyPostJob: React.FC = () => {
                 </select>
               </div>
               <div className="form-group">
-                <label>Stipend / Salary (per month)</label>
-                <input type="text" name="stipend" value={jobData.stipend} onChange={handleChange} placeholder="e.g. ₹15,000 or $500" />
+                <label>Salary (per month)</label>
+                <input type="text" name="salary" value={jobData.salary} onChange={handleChange} placeholder="e.g. ₹15,000 or $500" required />
               </div>
+            </div>
+
+            <div className="form-group">
+              <label>Application Deadline</label>
+              <input type="datetime-local" name="enddate" value={jobData.enddate} onChange={handleChange} required />
             </div>
 
             <div className="form-group">
@@ -66,7 +112,9 @@ const CompanyPostJob: React.FC = () => {
             </div>
 
             <div className="btn-save-container">
-              <button type="submit" className="btn-save" style={{ backgroundColor: '#0f766e' }}>Post Job</button>
+              <button type="submit" className="btn-save" style={{ backgroundColor: '#0f766e' }} disabled={loading}>
+                {loading ? 'Posting Job...' : 'Post Job'}
+              </button>
             </div>
           </form>
 
