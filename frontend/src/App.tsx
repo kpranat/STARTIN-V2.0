@@ -27,6 +27,7 @@ import StudentAppliedJobs from './pages/student/StudentAppliedJobs';
 import CompanyProfile from './pages/company/CompanyProfile';
 import CompanyPostJob from './pages/company/CompanyPostJob';
 import CompanyApplicants from './pages/company/CompanyApplicant';
+import CompanyJobs from './pages/company/CompanyJobs';
 
 import './App.css';
 
@@ -61,6 +62,7 @@ function App() {
         <Route path="/company/profile-setup" element={<CompanyProfile />} />
         <Route path="/company/profile" element={<CompanyProfile />} />
         <Route path="/company/post-job" element={<CompanyPostJob />} />
+        <Route path="/company/jobs" element={<CompanyJobs />} />
         <Route path="/company/applicants" element={<CompanyApplicants />} />
         <Route path="/company/home" element={<CompanyProfile />} />
         

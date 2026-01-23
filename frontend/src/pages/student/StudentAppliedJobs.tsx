@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import StudentNavbar from '../../components/StudentNavbar';
 import '../../App.css';
 
+// Note: Backend endpoint to fetch applied jobs is not yet implemented
+// Current backend only has the endpoint to submit applications (/get/applicants POST)
+// Need backend endpoint like: GET /student/applied-jobs
+
 // Define the Job Type interface
 interface Job {
   id: number;
@@ -17,14 +21,17 @@ const StudentAppliedJobs: React.FC = () => {
 
   useEffect(() => {
     // ---------------------------------------------------------
-    // BACKEND INTEGRATION POINT
+    // TODO: BACKEND INTEGRATION
+    // Need to create backend endpoint to fetch student's applied jobs:
+    // GET /student/applied-jobs (with student_id from JWT or session)
+    // Should join JobApplication, JobDetails, and CompanyProfile tables
     // ---------------------------------------------------------
-    // Fetch the list of jobs the logged-in student has applied to.
-    // 
     // async function fetchAppliedJobs() {
     //   try {
-    //     const response = await axios.get('/api/student/applications');
-    //     setAppliedJobs(response.data);
+    //     const response = await api.student.getAppliedJobs();
+    //     if (response.data.success) {
+    //       setAppliedJobs(response.data.data);
+    //     }
     //   } catch (error) {
     //     console.error("Error fetching jobs", error);
     //   } finally {
@@ -50,7 +57,22 @@ const StudentAppliedJobs: React.FC = () => {
     <>
       <StudentNavbar />
       <div className="page-container">
-        <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>Your Applied Jobs</h1>
+        <h1 style={{ textAlign: 'center', marginBottom: '15px' }}>Your Applied Jobs</h1>
+
+        <div style={{ 
+          textAlign: 'center', 
+          marginBottom: '25px', 
+          padding: '15px', 
+          backgroundColor: '#fff3cd', 
+          borderRadius: '8px',
+          maxWidth: '900px',
+          margin: '0 auto 25px'
+        }}>
+          <p style={{ color: '#856404', fontSize: '0.95rem', margin: 0 }}>
+            ⚠️ <strong>Note:</strong> Backend endpoint to fetch applied jobs is not yet implemented. 
+            This page shows mock data. Backend needs to create an endpoint to retrieve your applications.
+          </p>
+        </div>
 
         {isLoading ? (
           <p style={{textAlign: 'center'}}>Loading applications...</p>

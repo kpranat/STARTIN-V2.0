@@ -21,6 +21,7 @@ const CompanyNavbar: React.FC = () => {
         {/* Main Features */}
         <Link to="/company/profile" className="nav-link">Profile</Link>
         <Link to="/company/post-job" className="nav-link">Post Jobs</Link>
+        <Link to="/company/jobs" className="nav-link">My Jobs</Link>
         <Link to="/company/applicants" className="nav-link">Applicants</Link>
 
         {/* Navigation Shortcuts */}

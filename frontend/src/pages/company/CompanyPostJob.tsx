@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CompanyNavbar from '../../components/CompanyNavbar';
 import { api } from '../../services/api';
 import { getCompanyId } from '../../utils/auth';
 import '../../App.css'; 
 
 const CompanyPostJob: React.FC = () => {
+  const navigate = useNavigate();
   const [jobData, setJobData] = useState({
     title: '',
     type: 'Internship',
@@ -54,6 +56,11 @@ const CompanyPostJob: React.FC = () => {
           requirements: '',
           enddate: ''
         });
+        
+        // Redirect to jobs page after 1.5 seconds
+        setTimeout(() => {
+          navigate('/company/jobs');
+        }, 1500);
       } else {
         setError(response.data.message || 'Failed to post job');
       }

@@ -55,6 +55,16 @@ class JobDetails(db.Model):
     requirements = db.Column(db.Text,nullable = False)
     enddate = db.Column(db.DateTime,nullable = False)
     companyid = db.Column(db.Integer,db.ForeignKey("company_profile.id"),nullable = False)
+#======================= job application ============================================
+class JobApplication(db.Model):
+    id = db.Column(db.Integer,primary_key = True)
+    companyid = db.Column(db.Integer,db.ForeignKey("company_profile.id"),nullable = False)
+    studentid = db.Column(db.Integer,db.ForeignKey("student_profile.id"),nullable = False)
+    jobid = db.Column(db.Integer,db.ForeignKey("job_details.id"),nullable = False)
+    status = db.Column(db.String(255),nullable =False,default = "pending")
+    
+    # Unique constraint to prevent duplicate applications
+    __table_args__ = (db.UniqueConstraint('studentid', 'jobid', name='unique_student_job_application'),)
 
 
 

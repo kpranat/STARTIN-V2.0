@@ -40,7 +40,7 @@ def StudentSignUp():
     except Exception as e:
         print(f"Failed to send email: {e}")
         # For testing, continue without email
-    return jsonify({"message": "OTP sent successfully", "otp": otp})  # Include OTP for testing
+    return jsonify({"success": True, "message": "OTP sent successfully to your email"}), 200
 
 #HANDLE OTP VERIFICATION ===========================================================================    
 @CompanySignup_bp.route("/auth/CompanyVerifyOTP",methods = ['POST'])

@@ -1,8 +1,9 @@
 from flask import request,jsonify
-from app.models import db,JobDetails,CompanyProfile
+from app.models import db,JobDetails,CompanyProfile,JobApplication
 from . import JobDetails_bp
 from datetime import datetime
 
+#=================== set job details from the company side ===========================================
 @JobDetails_bp.route("/set/JobDetails",methods =['POST'])
 def setJobDetails():
     data = request.get_json()
@@ -33,7 +34,8 @@ def setJobDetails():
             return jsonify({"success": False, "message": "All details are required"}), 400 
     else:
         return jsonify({"success": False, "message": "Authentication Error. Login Again"}), 404
-    
+
+#=============================== show job details on the student side =========================================    
 @JobDetails_bp.route("/get/JobDetails",methods = ['POST','GET'])
 def getJobDetails():
     jobs = JobDetails.query.all()
@@ -52,7 +54,8 @@ def getJobDetails():
                     "description": jobs_details.description,
                     "requirements": jobs_details.requirements,
                     "enddate": jobs_details.enddate.isoformat(),
-                    "companyname": companyname
+                    "companyname": companyname,
+                    "companyid":jobs_details.companyid
                 }
                 job_list.append(job_data)
     
@@ -60,7 +63,8 @@ def getJobDetails():
         return jsonify({"success": True, "message": "Retrieved Data", "data": job_list}), 200
     else:
         return jsonify({"success": True, "message": "No New Job Openings. Keep Checking!!", "data": []}), 200
-
+    
+#===================================== show previuos job of the company =============================
 @JobDetails_bp.route("/get/CompanyJobs", methods=['POST'])
 def getCompanyJobs():
     data = request.get_json()
@@ -88,6 +92,38 @@ def getCompanyJobs():
         jobs_data.append(job_info)
     
     return jsonify({"success": True, "message": "Jobs retrieved", "data": jobs_data}), 200
+
+#==================================== handle applicants ============================================
+@JobDetails_bp.route("/get/applicants",methods = ['POST'])
+def showApplicants():
+    data = request.get_json()
+    studentid = data.get("studentid")
+    if not studentid:
+        return jsonify({"success": False, "message": "Authentication Error. Login Again"}), 404
+    companyid = data.get("companyid")
+    jobid = data.get("jobid")
+    if not companyid or not jobid:
+        return jsonify({"success": False, "message": "Cant Access Details. Try Again Later"}), 400
+    
+    # Check if student has already applied to this job
+    existing_application = JobApplication.query.filter_by(studentid=studentid, jobid=jobid).first()
+    if existing_application:
+        return jsonify({"success": False, "message": "You have already applied to this job"}), 400
+    
+    JobApplicationData = JobApplication(jobid = jobid,studentid = studentid,companyid=companyid)
+    db.session.add(JobApplicationData)
+    db.session.commit()
+    return jsonify({"success": True, "message": "Your application was successful"}),200
+
+
+
+
+
+
+
+
+
+    
 
         
     

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import StudentNavbar from '../../components/StudentNavbar';
 import { api } from '../../services/api';
+import { getStudentId } from '../../utils/auth';
 import '../../App.css'; 
 
 // 1. Define the shape of a Job object to match backend response
@@ -13,6 +14,7 @@ interface Job {
   requirements: string;
   enddate: string;
   companyname: string;
+  companyid: number;
 }
 
 const StudentHome: React.FC = () => {
@@ -22,7 +24,12 @@ const StudentHome: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   
   // 3. State to track which jobs user has clicked "Apply" on
-  const [appliedJobIds, setAppliedJobIds] = useState<number[]>([]);
+  // Load from localStorage to persist across page reloads
+  const [appliedJobIds, setAppliedJobIds] = useState<number[]>(() => {
+    const studentId = getStudentId();
+    const stored = localStorage.getItem(`appliedJobs_${studentId}`);
+    return stored ? JSON.parse(stored) : [];
+  });
 
   // Fetch jobs on component mount
   useEffect(() => {
@@ -46,15 +53,51 @@ const StudentHome: React.FC = () => {
     fetchJobs();
   }, []);
 
-  // 4. Handle Apply Click
-  const handleApply = (jobId: number) => {
-    if (appliedJobIds.includes(jobId)) return; // Prevent double clicks
+  // 4. Handle Apply Click - Now connects to backend
+  const handleApply = async (job: Job) => {
+    if (appliedJobIds.includes(job.id)) return; // Prevent double clicks
 
-    // Add this ID to the list of applied jobs (changes button color)
-    setAppliedJobIds([...appliedJobIds, jobId]);
+    try {
+      const studentId = getStudentId();
+      if (!studentId) {
+        alert('Please login again to apply for jobs.');
+        return;
+      }
 
-    // Backend Note: In the future, this is where you call axios.post('/api/apply')
-    alert("Application submitted successfully!"); 
+      const response = await api.student.applyJob({
+        studentid: parseInt(studentId),
+        companyid: job.companyid,
+        jobid: job.id
+      });
+
+      if (response.data.success) {
+        // Add this ID to the list of applied jobs (changes button color)
+        const newAppliedIds = [...appliedJobIds, job.id];
+        setAppliedJobIds(newAppliedIds);
+        
+        // Persist to localStorage
+        localStorage.setItem(`appliedJobs_${studentId}`, JSON.stringify(newAppliedIds));
+        
+        alert(response.data.message || 'Application submitted successfully!');
+      } else {
+        alert(response.data.message || 'Failed to submit application. Please try again.');
+      }
+    } catch (err: any) {
+      console.error('Error applying for job:', err);
+      // Check if it's a duplicate application error
+      if (err.response?.data?.message === 'You have already applied to this job') {
+        alert('You have already applied to this job.');
+        // Add to local state to reflect the applied status
+        const studentId = getStudentId();
+        const newAppliedIds = [...appliedJobIds, job.id];
+        setAppliedJobIds(newAppliedIds);
+        if (studentId) {
+          localStorage.setItem(`appliedJobs_${studentId}`, JSON.stringify(newAppliedIds));
+        }
+      } else {
+        alert('Failed to submit application. Please try again.');
+      }
+    }
   };
 
   // 5. Filter Logic
@@ -123,7 +166,7 @@ const StudentHome: React.FC = () => {
 
                   {/* Apply Button with visual toggle */}
                   <button 
-                    onClick={() => handleApply(job.id)}
+                    onClick={() => handleApply(job)}
                     className="apply-btn"
                     disabled={isApplied}
                     style={{ 
