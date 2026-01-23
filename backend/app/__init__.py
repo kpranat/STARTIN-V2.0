@@ -1,8 +1,9 @@
-from flask import Flask,blueprints
+from flask import Flask,blueprints, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from .extensions import db,mail
 from .config import Config
+import os
 
 
 def create_app():
@@ -51,6 +52,12 @@ def create_app():
 
     from app.JobDetails import JobDetails_bp
     app.register_blueprint(JobDetails_bp)
+
+    # Route to serve uploaded resume files
+    @app.route('/uploads/resumes/<filename>')
+    def serve_resume(filename):
+        upload_folder = os.path.join(os.getcwd(), 'uploads', 'resumes')
+        return send_from_directory(upload_folder, filename)
 
     # Import models before creating tables
     from . import models

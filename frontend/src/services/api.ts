@@ -105,6 +105,8 @@ export const api = {
     applyJob: (data: { studentid: string | number; companyid: string | number; jobid: string | number }) => 
       apiClient.post('/get/applicants', data),
     getAppliedJobs: () => apiClient.get('/student/applied-jobs'),
+    getAppliedJobIds: (data: { studentid: string | number }) => 
+      apiClient.post('/get/student/appliedJobs', data),
   },
   
   // Company endpoints
@@ -118,8 +120,10 @@ export const api = {
     getProfile: () => apiClient.get('/company/profile'),
     postJob: (data: any) => apiClient.post('/set/JobDetails', data),
     getJobs: (data: any) => apiClient.post('/get/CompanyJobs', data),
-    getApplicants: (data: { companyid: string | number }) => 
-      apiClient.post('/get/applicants', data),
+    getApplicants: (data: { compnayid: string | number }) => 
+      apiClient.post('/set/jobApplicantData/companyportal', data),
+    updateApplicationStatus: (data: { application_id: number; status: string }) =>
+      apiClient.post('/update/applicationStatus', data),
   },
 };
 

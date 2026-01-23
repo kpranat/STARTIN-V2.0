@@ -23,34 +23,41 @@ const StudentHome: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
-  // 3. State to track which jobs user has clicked "Apply" on
-  // Load from localStorage to persist across page reloads
-  const [appliedJobIds, setAppliedJobIds] = useState<number[]>(() => {
-    const studentId = getStudentId();
-    const stored = localStorage.getItem(`appliedJobs_${studentId}`);
-    return stored ? JSON.parse(stored) : [];
-  });
+  // 3. State to track which jobs user has applied to
+  // Now fetched from backend instead of localStorage
+  const [appliedJobIds, setAppliedJobIds] = useState<number[]>([]);
 
-  // Fetch jobs on component mount
+  // Fetch jobs and applied jobs on component mount
   useEffect(() => {
-    const fetchJobs = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await api.student.getJobs();
-        if (response.data.success) {
-          setJobs(response.data.data);
+        const studentId = getStudentId();
+        
+        // Fetch both jobs and applied job IDs in parallel
+        const [jobsResponse, appliedResponse] = await Promise.all([
+          api.student.getJobs(),
+          studentId ? api.student.getAppliedJobIds({ studentid: parseInt(studentId) }) : Promise.resolve({ data: { success: true, data: [] } })
+        ]);
+        
+        if (jobsResponse.data.success) {
+          setJobs(jobsResponse.data.data);
         } else {
-          setError(response.data.message || 'Failed to load jobs');
+          setError(jobsResponse.data.message || 'Failed to load jobs');
+        }
+        
+        if (appliedResponse.data.success) {
+          setAppliedJobIds(appliedResponse.data.data);
         }
       } catch (err) {
-        console.error('Error fetching jobs:', err);
+        console.error('Error fetching data:', err);
         setError('Failed to load jobs. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchJobs();
+    fetchData();
   }, []);
 
   // 4. Handle Apply Click - Now connects to backend
@@ -75,9 +82,6 @@ const StudentHome: React.FC = () => {
         const newAppliedIds = [...appliedJobIds, job.id];
         setAppliedJobIds(newAppliedIds);
         
-        // Persist to localStorage
-        localStorage.setItem(`appliedJobs_${studentId}`, JSON.stringify(newAppliedIds));
-        
         alert(response.data.message || 'Application submitted successfully!');
       } else {
         alert(response.data.message || 'Failed to submit application. Please try again.');
@@ -88,12 +92,8 @@ const StudentHome: React.FC = () => {
       if (err.response?.data?.message === 'You have already applied to this job') {
         alert('You have already applied to this job.');
         // Add to local state to reflect the applied status
-        const studentId = getStudentId();
         const newAppliedIds = [...appliedJobIds, job.id];
         setAppliedJobIds(newAppliedIds);
-        if (studentId) {
-          localStorage.setItem(`appliedJobs_${studentId}`, JSON.stringify(newAppliedIds));
-        }
       } else {
         alert('Failed to submit application. Please try again.');
       }

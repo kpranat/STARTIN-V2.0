@@ -1,5 +1,5 @@
 from flask import request,jsonify
-from app.models import db,JobDetails,CompanyProfile,JobApplication
+from app.models import db,JobDetails,CompanyProfile,JobApplication,StudentProfile
 from . import JobDetails_bp
 from datetime import datetime
 
@@ -114,6 +114,96 @@ def showApplicants():
     db.session.add(JobApplicationData)
     db.session.commit()
     return jsonify({"success": True, "message": "Your application was successful"}),200
+
+#========================= get student's applied jobs =========================================
+@JobDetails_bp.route("/get/student/appliedJobs", methods=['POST'])
+def getStudentAppliedJobs():
+    data = request.get_json()
+    studentid = data.get("studentid")
+    
+    if not studentid:
+        return jsonify({"success": False, "message": "Student ID is required"}), 400
+    
+    # Get all job IDs that the student has applied to
+    applications = JobApplication.query.filter_by(studentid=studentid).all()
+    applied_job_ids = [app.jobid for app in applications]
+    
+    return jsonify({"success": True, "message": "Retrieved applied jobs", "data": applied_job_ids}), 200
+
+#========================= retrieve job application company ===================================
+@JobDetails_bp.route("/set/jobApplicantData/companyportal",methods =['POST','GET'])
+def setJobApplicantStatus():
+    data = request.get_json()
+    companyid = data.get("compnayid")
+    
+    if not companyid:
+        return jsonify({"success": False, "message": "Company ID is required"}), 400
+    
+    # Get all applications for this company
+    applicant_applications = JobApplication.query.filter_by(companyid=companyid).all()
+    
+    if not applicant_applications:
+        return jsonify({"success": True, "message": "No applicants found", "data": []}), 200
+    
+    applicants_list = []
+    
+    for application in applicant_applications:
+        studentid = application.studentid
+        
+        # Get student profile
+        student_profile = StudentProfile.query.filter_by(id=studentid).first()
+        
+        if student_profile:
+            # Get job details
+            job = JobDetails.query.filter_by(id=application.jobid).first()
+            
+            student_data = {
+                "studentid": studentid,
+                "name": student_profile.fullName,
+                "about": student_profile.about,
+                "skills": student_profile.skills,
+                "github": student_profile.github,
+                "linkedin": student_profile.linkedin,
+                "resumename": "resume",
+                "resumepath": student_profile.resume,
+                "status": application.status,
+                "jobid": application.jobid,
+                "jobtitle": job.title if job else "N/A",
+                "applicationid": application.id
+            }
+            applicants_list.append(student_data)
+    
+    return jsonify({"success": True, "message": "Data Retrieved Successfully", "data": applicants_list}), 200
+
+#========================= update application status ===================================
+@JobDetails_bp.route("/update/applicationStatus", methods=['POST'])
+def updateApplicationStatus():
+    data = request.get_json()
+    application_id = data.get("application_id")
+    new_status = data.get("status")
+    
+    if not application_id:
+        return jsonify({"success": False, "message": "Application ID is required"}), 400
+    
+    if not new_status:
+        return jsonify({"success": False, "message": "Status is required"}), 400
+    
+    # Validate status
+    valid_statuses = ["pending", "rejected", "interview scheduled"]
+    if new_status not in valid_statuses:
+        return jsonify({"success": False, "message": "Invalid status. Must be one of: pending, rejected, interview scheduled"}), 400
+    
+    # Find and update the application
+    application = JobApplication.query.filter_by(id=application_id).first()
+    
+    if not application:
+        return jsonify({"success": False, "message": "Application not found"}), 404
+    
+    application.status = new_status
+    db.session.commit()
+    
+    return jsonify({"success": True, "message": f"Application status updated to {new_status}"}), 200
+        
 
 
 
