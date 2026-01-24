@@ -77,6 +77,10 @@ export const connectToBackend = async (actionType: string, data: any) => {
         response = await axios.post(`${API_BASE_URL}/auth/CompanyLogin`, data);
         return response.data;
         
+      case 'admin_login':
+        response = await axios.post(`${API_BASE_URL}/auth/AdminLogin`, data);
+        return response.data;
+        
       default:
         throw new Error(`Unknown action type: ${actionType}`);
     }

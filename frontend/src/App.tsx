@@ -17,6 +17,10 @@ import StudentLogin from './pages/StudentLogin';
 import StudentSignup from './pages/StudentSignup';
 import CompanyLogin from './pages/CompanyLogin';
 import CompanySignup from './pages/CompanySignup';
+import AdminLogin from './pages/admin/AdminLogin';
+
+// Admin Dashboard Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Student Dashboard Pages
 import StudentProfile from './pages/student/StudentProfile';
@@ -49,6 +53,7 @@ function App() {
         <Route path="/student/signup" element={<StudentSignup />} />
         <Route path="/company/login" element={<CompanyLogin />} />
         <Route path="/company/signup" element={<CompanySignup />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
 
         {/* Step 4: Student Dashboard */}
         <Route path="/student/profile-check" element={<StudentProfileCheck />} />
@@ -65,6 +70,9 @@ function App() {
         <Route path="/company/jobs" element={<CompanyJobs />} />
         <Route path="/company/applicants" element={<CompanyApplicants />} />
         <Route path="/company/home" element={<CompanyProfile />} />
+        
+        {/* Step 6: Admin Dashboard */}
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
         
       </Routes>
     </Router>

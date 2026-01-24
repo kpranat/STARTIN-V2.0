@@ -44,6 +44,23 @@ const Landing: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Admin Login Link */}
+        <div style={{ marginTop: '30px', textAlign: 'center' }}>
+          <button 
+            onClick={() => navigate('/admin/login')}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              color: '#dc2626', 
+              cursor: 'pointer', 
+              fontSize: '0.85rem',
+              textDecoration: 'underline'
+            }}
+          >
+            Admin Login
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,8 +1,6 @@
 from . import CompanyProfileSetup_bp
 from flask import request,jsonify
 from app.models import CompanyProfile,db,companyAuth
-import jwt
-
 
 @CompanyProfileSetup_bp.route("/check/CompanyProfile",methods = ['POST','GET','OPTIONS'])
 def CheckCompanyProfile():
