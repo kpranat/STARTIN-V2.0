@@ -130,7 +130,7 @@ def getStudentAppliedJobs():
     
     return jsonify({"success": True, "message": "Retrieved applied jobs", "data": applied_job_ids}), 200
 
-#========================= retrieve job application company ===================================
+#========================= retrieve job application (company side) ===================================
 @JobDetails_bp.route("/set/jobApplicantData/companyportal",methods =['POST','GET'])
 def setJobApplicantStatus():
     data = request.get_json()
@@ -203,6 +203,50 @@ def updateApplicationStatus():
     db.session.commit()
     
     return jsonify({"success": True, "message": f"Application status updated to {new_status}"}), 200
+
+#========================= get student's applied jobs with details ===================================
+@JobDetails_bp.route("/get/student/appliedJobsDetails", methods=['POST'])
+def getStudentAppliedJobsDetails():
+    data = request.get_json()
+    studentid = data.get("studentid")
+    
+    if not studentid:
+        return jsonify({"success": False, "message": "Student ID is required"}), 400
+    
+    # Get all applications for this student
+    applications = JobApplication.query.filter_by(studentid=studentid).all()
+    
+    if not applications:
+        return jsonify({"success": True, "message": "No applications found", "data": []}), 200
+    
+    applications_list = []
+    
+    for application in applications:
+        # Get job details
+        job = JobDetails.query.filter_by(id=application.jobid).first()
+        
+        if job:
+            # Get company details
+            company = CompanyProfile.query.filter_by(id=job.companyid).first()
+            
+            application_data = {
+                "applicationid": application.id,
+                "jobid": job.id,
+                "jobtitle": job.title,
+                "jobtype": job.type,
+                "salary": job.salary,
+                "description": job.description,
+                "requirements": job.requirements,
+                "enddate": job.enddate.isoformat(),
+                "companyname": company.name if company else "Unknown Company",
+                "companyid": job.companyid,
+                "status": application.status
+            }
+            applications_list.append(application_data)
+    
+    return jsonify({"success": True, "message": "Applications retrieved successfully", "data": applications_list}), 200
+
+
         
 
 

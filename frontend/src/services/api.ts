@@ -107,6 +107,8 @@ export const api = {
     getAppliedJobs: () => apiClient.get('/student/applied-jobs'),
     getAppliedJobIds: (data: { studentid: string | number }) => 
       apiClient.post('/get/student/appliedJobs', data),
+    getAppliedJobsDetails: (data: { studentid: string | number }) => 
+      apiClient.post('/get/student/appliedJobsDetails', data),
   },
   
   // Company endpoints
