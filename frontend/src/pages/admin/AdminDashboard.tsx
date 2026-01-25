@@ -519,24 +519,6 @@ const AdminDashboard: React.FC = () => {
             </p>
           </div>
 
-          {/* Analytics */}
-          <div className="card" style={{
-            padding: '30px',
-            cursor: 'pointer',
-            transition: 'transform 0.2s'
-          }}>
-            <div style={{
-              fontSize: '3rem',
-              marginBottom: '15px'
-            }}>📊</div>
-            <h3 style={{ color: '#ea580c', marginBottom: '10px' }}>
-              Analytics
-            </h3>
-            <p style={{ color: '#666', fontSize: '0.9rem' }}>
-              View platform statistics
-            </p>
-          </div>
-
           {/* Manage Universities */}
           <div 
             className="card" 
