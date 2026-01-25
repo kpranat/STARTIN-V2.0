@@ -20,13 +20,8 @@ def StudentSignUp():
     if not all([passkey, email, password, universityId]):
         return jsonify({"success": False, "message": "All fields are required"}), 400
     
-    # Verify passkey against companyVerification table (passkeys are hashed)
-    all_companies = companyVerification.query.all()
-    company_verification = None
-    for company in all_companies:
-        if check_password_hash(company.passkey, passkey):
-            company_verification = company
-            break
+    # Verify passkey against companyVerification table (passkeys are in plain text)
+    company_verification = companyVerification.query.filter_by(passkey=passkey).first()
     
     if not company_verification:
         return jsonify({"success": False, "message": "Invalid passkey"}), 403

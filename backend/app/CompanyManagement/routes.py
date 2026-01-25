@@ -7,17 +7,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import secrets
 
-# In-memory store for plain passkeys (only for current session)
-plain_passkeys = {}
-
 # Get all companies from verification table
 @CompanyManagement_bp.route("/admin/companies/verification", methods=['GET'])
 def get_verification_companies():
     try:
         companies = companyVerification.query.all()
         companies_list = [{
-            'passkey': plain_passkeys.get(company.passkey, company.passkey),  # Show plain if available
-            'hashedPasskey': company.passkey,  # Keep hashed version for operations
+            'passkey': company.passkey,  # Plain passkey
             'mailId': company.mailId,
             'name': company.name,
             'registered': False  # Default to not registered
@@ -98,36 +94,28 @@ def add_company_manual():
                 "message": "All fields (passkey, mailId, name) are required"
             }), 400
         
-        # Check if passkey already exists (check all hashed passkeys)
-        all_companies = companyVerification.query.all()
-        for company in all_companies:
-            if check_password_hash(company.passkey, passkey):
-                return jsonify({
-                    "success": False,
-                    "message": "Company with this passkey already exists"
-                }), 400
+        # Check if passkey already exists
+        existing = companyVerification.query.filter_by(passkey=passkey).first()
+        if existing:
+            return jsonify({
+                "success": False,
+                "message": "Company with this passkey already exists"
+            }), 400
         
-        # Hash the passkey and add new company
-        hashed_passkey = generate_password_hash(passkey)
+        # Add new company with plain passkey
         new_company = companyVerification(
-            passkey=hashed_passkey,
+            passkey=passkey,
             mailId=mailId,
             name=name
         )
         db.session.add(new_company)
         db.session.commit()
         
-        # Store plain passkey temporarily for display
-        plain_passkeys[hashed_passkey] = passkey
-        # Store plain passkey temporarily for display
-        plain_passkeys[hashed_passkey] = passkey
-        
         return jsonify({
             "success": True,
             "message": "Company added successfully",
             "company": {
-                "passkey": passkey,  # Return plain passkey for display
-                "hashedPasskey": hashed_passkey,  # Return hashed version for operations
+                "passkey": passkey,
                 "mailId": mailId,
                 "name": name,
                 "registered": False
@@ -192,13 +180,8 @@ def upload_companies():
                     errors.append(f"Row {index + 2}: Missing required fields")
                     continue
                 
-                # Check if company exists (check all hashed passkeys)
-                all_companies = companyVerification.query.all()
-                existing = None
-                for company in all_companies:
-                    if check_password_hash(company.passkey, passkey):
-                        existing = company
-                        break
+                # Check if company exists by passkey
+                existing = companyVerification.query.filter_by(passkey=passkey).first()
                 
                 if existing:
                     # Update existing company
@@ -206,21 +189,17 @@ def upload_companies():
                     existing.name = name
                     updated += 1
                 else:
-                    # Hash the passkey and add new company
-                    hashed_passkey = generate_password_hash(passkey)
+                    # Add new company with plain passkey
                     new_company = companyVerification(
-                        passkey=hashed_passkey,
+                        passkey=passkey,
                         mailId=mailId,
                         name=name
                     )
                     db.session.add(new_company)
                     added += 1
-                    # Store plain passkey temporarily
-                    plain_passkeys[hashed_passkey] = passkey
-                    # Store plain passkey for display in response
+                    # Add to response list
                     added_companies.append({
                         "passkey": passkey,
-                        "hashedPasskey": hashed_passkey,
                         "mailId": mailId,
                         "name": name
                     })
@@ -251,21 +230,17 @@ def upload_companies():
         }), 500
 
 # Delete company from verification table and all related records
-@CompanyManagement_bp.route("/admin/companies/<hashedPasskey>", methods=['DELETE'])
-def delete_company(hashedPasskey):
+@CompanyManagement_bp.route("/admin/companies/<passkey>", methods=['DELETE'])
+def delete_company(passkey):
     try:
-        # Find company in verification table by hashed passkey
-        company_verification = companyVerification.query.filter_by(passkey=hashedPasskey).first()
+        # Find company in verification table by passkey
+        company_verification = companyVerification.query.filter_by(passkey=passkey).first()
         
         if not company_verification:
             return jsonify({
                 "success": False,
                 "message": "Company not found in verification table"
             }), 404
-        
-        # Remove from plain passkeys cache if exists
-        if hashedPasskey in plain_passkeys:
-            del plain_passkeys[hashedPasskey]
         
         # Find the registered company auth record by email
         company_auth = companyAuth.query.filter_by(email=company_verification.mailId).first()

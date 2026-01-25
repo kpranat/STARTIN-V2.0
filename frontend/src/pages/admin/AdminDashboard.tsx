@@ -12,7 +12,6 @@ interface University {
 
 interface Company {
   passkey: string;
-  hashedPasskey?: string;  // Store hashed version for delete operations
   mailId: string;
   name: string;
   registered: boolean;
@@ -30,14 +29,24 @@ interface RegisteredCompany {
   profileComplete: boolean;
 }
 
+interface Student {
+  id: number;
+  email: string;
+  name: string;
+  universityName: string;
+  universityId: number;
+}
+
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [adminId, setAdminId] = useState<string | null>(null);
   const [showUniversityModal, setShowUniversityModal] = useState(false);
   const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const [showStudentModal, setShowStudentModal] = useState(false);
   const [universities, setUniversities] = useState<University[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [registeredCompanies, setRegisteredCompanies] = useState<RegisteredCompany[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
@@ -291,6 +300,32 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const fetchStudents = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://localhost:5000/students');
+      if (response.data.success) {
+        setStudents(response.data.students);
+      }
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      setUploadMessage({ type: 'error', text: 'Failed to fetch students' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openStudentModal = () => {
+    setShowStudentModal(true);
+    setUploadMessage(null);
+    fetchStudents();
+  };
+
+  const closeStudentModal = () => {
+    setShowStudentModal(false);
+    setUploadMessage(null);
+  };
+
   const handleDeleteCompany = async (company: Company) => {
     if (!window.confirm('Are you sure you want to delete this company?')) {
       return;
@@ -298,9 +333,8 @@ const AdminDashboard: React.FC = () => {
 
     setLoading(true);
     try {
-      // Use hashedPasskey for deletion if available, otherwise use passkey
-      const passkeyToDelete = company.hashedPasskey || company.passkey;
-      const response = await axios.delete(`http://localhost:5000/admin/companies/${encodeURIComponent(passkeyToDelete)}`);
+      // Use plain passkey for deletion
+      const response = await axios.delete(`http://localhost:5000/admin/companies/${encodeURIComponent(company.passkey)}`);
       if (response.data.success) {
         setUploadMessage({ type: 'success', text: 'Company deleted successfully' });
         fetchCompanies();
@@ -371,12 +405,17 @@ const AdminDashboard: React.FC = () => {
           marginTop: '30px'
         }}>
           {/* Manage Students */}
-          <div className="card" style={{
-            padding: '30px',
-            cursor: 'pointer',
-            transition: 'transform 0.2s',
-            ':hover': { transform: 'scale(1.05)' }
-          }}>
+          <div 
+            className="card" 
+            onClick={openStudentModal}
+            style={{
+              padding: '30px',
+              cursor: 'pointer',
+              transition: 'transform 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
             <div style={{
               fontSize: '3rem',
               marginBottom: '15px'
@@ -1042,6 +1081,132 @@ const AdminDashboard: React.FC = () => {
                   )}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Student Management Modal */}
+        {showStudentModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}>
+            <div style={{
+              background: 'white',
+              borderRadius: '10px',
+              padding: '30px',
+              maxWidth: '1000px',
+              width: '100%',
+              maxHeight: '85vh',
+              overflow: 'auto'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px'
+              }}>
+                <h2 style={{ color: '#4f46e5', margin: 0 }}>Manage Students</h2>
+                <button
+                  onClick={closeStudentModal}
+                  style={{
+                    background: '#dc2626',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    padding: '8px 16px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+
+              {/* Students List */}
+              <div>
+                <h3 style={{ color: '#4f46e5', marginBottom: '15px' }}>
+                  Registered Students ({students.length})
+                </h3>
+                
+                {uploadMessage && (
+                  <div style={{
+                    marginBottom: '15px',
+                    padding: '10px',
+                    borderRadius: '5px',
+                    background: uploadMessage.type === 'success' ? '#d1fae5' : '#fee2e2',
+                    color: uploadMessage.type === 'success' ? '#059669' : '#dc2626',
+                    fontSize: '0.9rem'
+                  }}>
+                    {uploadMessage.text}
+                  </div>
+                )}
+                
+                {loading ? (
+                  <p style={{ textAlign: 'center', color: '#666' }}>Loading...</p>
+                ) : students.length === 0 ? (
+                  <p style={{ textAlign: 'center', color: '#666' }}>No students found</p>
+                ) : (
+                  <div style={{ maxHeight: '500px', overflow: 'auto' }}>
+                    <table style={{
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      tableLayout: 'fixed'
+                    }}>
+                      <thead>
+                        <tr style={{ background: '#f3f4f6', position: 'sticky', top: 0 }}>
+                          <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #d1d5db', width: '60px' }}>ID</th>
+                          <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #d1d5db', width: '200px' }}>Name</th>
+                          <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #d1d5db', width: '250px' }}>Email</th>
+                          <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #d1d5db', width: '220px' }}>University</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {students.map((student) => (
+                          <tr key={student.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                            <td style={{ padding: '12px', verticalAlign: 'middle' }}>{student.id}</td>
+                            <td style={{ 
+                              padding: '12px',
+                              verticalAlign: 'middle',
+                              color: student.name === 'Profile Not Created' ? '#9ca3af' : '#333',
+                              fontStyle: student.name === 'Profile Not Created' ? 'italic' : 'normal'
+                            }}>
+                              {student.name}
+                            </td>
+                            <td style={{ padding: '12px', verticalAlign: 'middle', wordBreak: 'break-word' }}>{student.email}</td>
+                            <td style={{ padding: '12px', verticalAlign: 'middle' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                background: '#dbeafe',
+                                color: '#1e40af',
+                                padding: '4px 12px',
+                                borderRadius: '12px',
+                                fontSize: '0.85rem',
+                                fontWeight: '500',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                maxWidth: '100%'
+                              }}>
+                                {student.universityName}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
