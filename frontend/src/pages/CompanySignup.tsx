@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { connectToBackend } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { setCompanyId } from '../utils/auth';
+import { setCompanyId, setUniversityId, setUniversityName } from '../utils/auth';
 import '../App.css';
 
 const CompanySignup = () => {
@@ -42,11 +42,23 @@ const CompanySignup = () => {
     setError('');
     setSuccessMessage('');
 
+    // Get university ID from localStorage
+    const universityId = localStorage.getItem('selected_university_id');
+    if (!universityId) {
+      setError('Please select a university first');
+      setLoading(false);
+      navigate('/');
+      return;
+    }
+
     try {
-      const response = await connectToBackend('company_signup', formData);
+      const response = await connectToBackend('company_signup', {
+        ...formData,
+        universityId: parseInt(universityId)
+      });
       
       if (response.message) {
-        setSuccessMessage(`${response.message}. OTP: ${response.otp}`);
+        setSuccessMessage(response.message);
         setStep('otp'); // Move to OTP verification step
       }
     } catch (err: any) {
@@ -64,20 +76,33 @@ const CompanySignup = () => {
     setLoading(true);
     setError('');
 
+    // Get university ID from localStorage
+    const universityId = localStorage.getItem('selected_university_id');
+
     try {
       const response = await connectToBackend('company_verify_otp', {
         email: formData.email,
         otp: otp,
-        password: formData.password
+        password: formData.password,
+        universityId: universityId ? parseInt(universityId) : undefined
       });
 
       if (response.token) {
         // Store token and login
         login(response.token);
         
-        // Store company ID from response
+        // Store company ID and university ID from response
         if (response.company_id) {
           setCompanyId(response.company_id);
+        }
+        if (response.university_id) {
+          setUniversityId(response.university_id);
+        }
+        
+        // Also store university name from localStorage if available
+        const universityName = localStorage.getItem('selected_university_name');
+        if (universityName) {
+          setUniversityName(universityName);
         }
         
         setRedirecting(true);

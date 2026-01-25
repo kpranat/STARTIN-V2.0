@@ -15,21 +15,23 @@ def StudentSignUp():
     name = data.get("name")
     email = data.get("email")
     password = data.get("password")
+    universityId = data.get("universityId")
     # Validation
-    if not all([name, email, password]):
+    if not all([name, email, password, universityId]):
         return jsonify({"success": False, "message": "All fields are required"}), 400     
-    #check if mail exist or not
-    existing_mail = companyAuth.query.filter_by( email = email ).first()
+    #check if mail exist in this university
+    existing_mail = companyAuth.query.filter_by(email=email, universityid=universityId).first()
     if (existing_mail):
-        return jsonify({"success": False, "message": "Email Already registered"}),400        
+        return jsonify({"success": False, "message": "Email already registered in this university"}),400        
     #mail sending-------------------------------------------------
     otp = str(random.randint(100000, 999999)) #create otp
-    # Remove previous OTPs for this email
-    otpVerification.query.filter_by(email=email).delete()
+    # Remove previous OTPs for this email in this university
+    otpVerification.query.filter_by(email=email, universityid=universityId).delete()
     db.session.commit()
     
     #add otp in the model (don't create student account yet)
     otp_data = otpVerification(email=email, otp=otp)
+    otp_data.universityid = universityId
     db.session.add(otp_data)
     db.session.commit()
     # Send email
@@ -74,8 +76,15 @@ def VerifyOTP():
         if record.otp != otp:
             return jsonify({"error": "Invalid OTP"}), 400    
         
+        # Get university ID from OTP record
+        university_id = record.universityid
+        
         # OTP is valid → now create the student account============================
-        companyAuth_data = companyAuth(email=email, password=generate_password_hash(password))
+        companyAuth_data = companyAuth(
+            email=email, 
+            password=generate_password_hash(password),
+            universityid=university_id
+        )
         db.session.add(companyAuth_data)
         
         # Delete OTP after successful verification============================
@@ -86,6 +95,7 @@ def VerifyOTP():
         token = jwt.encode(
             {
                 "email": email,
+                "universityId": university_id,
                 "exp": datetime.now(timezone.utc) + timedelta(
                     minutes=current_app.config["JWT_EXP_MINUTES"]
                 )
@@ -97,7 +107,8 @@ def VerifyOTP():
         return jsonify({
             "message": "OTP verified successfully", 
             "token": token,
-            "company_id": companyAuth_data.id
+            "company_id": companyAuth_data.id,
+            "university_id": university_id
         }), 200
         
     except Exception as e:

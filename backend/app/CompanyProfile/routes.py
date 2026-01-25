@@ -9,11 +9,15 @@ def CheckCompanyProfile():
         
     data = request.get_json()
     company_id = data.get("company_id")
+    university_id = data.get("universityId")
     
     if not company_id:
         return jsonify({"success": False, "message": "Company ID required"}),400
+    
+    if not university_id:
+        return jsonify({"success": False, "message": "University ID required"}),400
         
-    profile = CompanyProfile.query.filter_by(id = company_id).first()
+    profile = CompanyProfile.query.filter_by(id = company_id, universityid = university_id).first()
     if profile:
         return jsonify({
             "success": True, 
@@ -35,6 +39,7 @@ def CompanyProfileSetup():
         return jsonify({}), 200
     data = request.get_json()
     company_id = data.get("company_id")
+    university_id = data.get("universityId")
     name= data.get("name")
     website= data.get("website")
     location= data.get("location")
@@ -42,15 +47,25 @@ def CompanyProfileSetup():
     
     if not company_id:
         return jsonify({"success": False, "message": "Company ID required"}),400
+    
+    if not university_id:
+        return jsonify({"success": False, "message": "University ID required"}),400
         
     # Check if profile already exists
-    if CompanyProfile.query.filter_by(id = company_id).first():
+    if CompanyProfile.query.filter_by(id = company_id, universityid = university_id).first():
         return jsonify({"success": False, "message": "Profile Already Setup"}),400
     
     if not name or not website or not location or not about:
         return jsonify({"success": False, "message": "All details are required"}),400
         
-    CompanyProfileData = CompanyProfile(id=company_id, name=name, website=website, location=location, about=about)
+    CompanyProfileData = CompanyProfile(
+        id=company_id, 
+        name=name, 
+        website=website, 
+        location=location, 
+        about=about,
+        universityid=university_id
+    )
     db.session.add(CompanyProfileData)
     db.session.commit()
     return jsonify({"success": True, "message": "Profile Created Successfully"}),200
@@ -61,6 +76,7 @@ def CompanyProfileUpdate():
         return jsonify({}), 200
     data = request.get_json()
     company_id = data.get("company_id")
+    university_id = data.get("universityId")
     name= data.get("name")
     website= data.get("website")
     location= data.get("location")
@@ -68,8 +84,11 @@ def CompanyProfileUpdate():
     
     if not company_id:
         return jsonify({"success": False, "message": "Company ID required"}),400
+    
+    if not university_id:
+        return jsonify({"success": False, "message": "University ID required"}),400
         
-    company_data = CompanyProfile.query.filter_by(id = company_id).first()
+    company_data = CompanyProfile.query.filter_by(id = company_id, universityid = university_id).first()
     
     if not company_data:
         return jsonify({"success": False, "message": "Profile not found"}),404

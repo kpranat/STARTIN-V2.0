@@ -10,6 +10,7 @@ class adminAuth(db.Model):
 class universitytable(db.Model):
     id = db.Column(db.Integer,primary_key = True,nullable = False)
     universityName = db.Column(db.String(500),nullable = False)
+    passkey = db.Column(db.String(500),nullable = False)
 #================================= Student Auth Table ========================================
 class studentAuth(db.Model):
     id = db.Column(db.Integer,primary_key = True)

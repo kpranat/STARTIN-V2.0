@@ -5,6 +5,8 @@ const USER_KEY = 'user_data';
 const COMPANY_ID_KEY = 'company_id';
 const STUDENT_ID_KEY = 'student_id';
 const ADMIN_ID_KEY = 'admin_id';
+const UNIVERSITY_ID_KEY = 'university_id';
+const UNIVERSITY_NAME_KEY = 'university_name';
 
 /**
  * Store JWT token in sessionStorage (clears on tab close)
@@ -30,6 +32,8 @@ export const removeToken = (): void => {
   sessionStorage.removeItem(COMPANY_ID_KEY);
   sessionStorage.removeItem(STUDENT_ID_KEY);
   sessionStorage.removeItem(ADMIN_ID_KEY);
+  sessionStorage.removeItem(UNIVERSITY_ID_KEY);
+  sessionStorage.removeItem(UNIVERSITY_NAME_KEY);
 };
 
 /**
@@ -138,4 +142,43 @@ export const setAdminId = (adminId: string | number): void => {
  */
 export const getAdminId = (): string | null => {
   return sessionStorage.getItem(ADMIN_ID_KEY);
+};
+
+/**
+ * Store university ID in sessionStorage
+ */
+export const setUniversityId = (universityId: string | number): void => {
+  sessionStorage.setItem(UNIVERSITY_ID_KEY, universityId.toString());
+};
+
+/**
+ * Get university ID from sessionStorage
+ */
+export const getUniversityId = (): string | null => {
+  return sessionStorage.getItem(UNIVERSITY_ID_KEY);
+};
+
+/**
+ * Store university name in sessionStorage
+ */
+export const setUniversityName = (universityName: string): void => {
+  sessionStorage.setItem(UNIVERSITY_NAME_KEY, universityName);
+};
+
+/**
+ * Get university name from sessionStorage
+ */
+export const getUniversityName = (): string | null => {
+  return sessionStorage.getItem(UNIVERSITY_NAME_KEY);
+};
+
+/**
+ * Get university ID from JWT token
+ */
+export const getUniversityIdFromToken = (): string | null => {
+  const token = getToken();
+  if (!token) return null;
+  
+  const payload = parseJwt(token);
+  return payload?.universityId?.toString() || null;
 };

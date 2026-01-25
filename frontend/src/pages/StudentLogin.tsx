@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { connectToBackend } from '../services/api';
-import { setStudentId } from '../utils/auth';
+import { setStudentId, setUniversityId, setUniversityName } from '../utils/auth';
 import '../App.css';
 
 const StudentLogin: React.FC = () => {
@@ -22,7 +22,26 @@ const StudentLogin: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await connectToBackend('student_login', { email, password });
+      // Get the selected university ID from localStorage
+      const selectedUniversityId = localStorage.getItem('selected_university_id');
+      
+      console.log('StudentLogin - University ID from localStorage:', selectedUniversityId);
+      
+      if (!selectedUniversityId) {
+        setError('University not selected. Please go back to landing page.');
+        setLoading(false);
+        return;
+      }
+      
+      console.log('StudentLogin - Sending login request with:', { email, universityId: selectedUniversityId });
+      
+      const response = await connectToBackend('student_login', { 
+        email, 
+        password, 
+        universityId: selectedUniversityId 
+      });
+      
+      console.log('StudentLogin - Response:', response);
       
       if (response.success && response.token) {
         // 1. Store the token
@@ -33,7 +52,17 @@ const StudentLogin: React.FC = () => {
           setStudentId(response.student_id);
         }
 
-        // 3. Show local "success" feedback immediately
+        // 3. Store university ID from response
+        if (response.university_id) {
+          setUniversityId(response.university_id);
+          // Get university name from localStorage (set during university selection)
+          const universityName = localStorage.getItem('selected_university_name');
+          if (universityName) {
+            setUniversityName(universityName);
+          }
+        }
+
+        // 4. Show local "success" feedback immediately
         setRedirecting(true);
 
         // 4. Navigate to profile check
@@ -45,9 +74,11 @@ const StudentLogin: React.FC = () => {
         setError(response.message || 'Invalid credentials');
         setLoading(false);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Login error:", err);
-      setError('Server error. Please try again later.');
+      // Show the actual error message from backend
+      const errorMessage = err.response?.data?.message || err.message || 'Server error. Please try again later.';
+      setError(errorMessage);
       setLoading(false);
     }
   };

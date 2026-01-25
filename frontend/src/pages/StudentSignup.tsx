@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { connectToBackend } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useAuth } from '../context/AuthContext'; 
-import { setStudentId } from '../utils/auth'; 
+import { setStudentId, setUniversityId, setUniversityName } from '../utils/auth'; 
 
 const StudentSignup = () => {
   const navigate = useNavigate(); 
@@ -28,13 +28,25 @@ const StudentSignup = () => {
     setError('');
     setIsLoading(true);
 
+    // Get university ID from localStorage
+    const universityId = localStorage.getItem('selected_university_id');
+    if (!universityId) {
+      setError('Please select a university first');
+      setIsLoading(false);
+      navigate('/');
+      return;
+    }
+
     try {
-      // Send data to backend
-      const response = await connectToBackend('student_signup', formData);
+      // Send data to backend with university ID
+      const response = await connectToBackend('student_signup', {
+        ...formData,
+        universityId: parseInt(universityId)
+      });
 
       // Backend returns { message: "OTP sent successfully" } on success
       if (response.message) {
-        setSuccessMessage(`Verification email sent! Please check your inbox. OTP: ${response.otp}`);
+        setSuccessMessage('Verification email sent! Please check your inbox.');
         
         // Show success message for 2 seconds before moving to OTP step
         setTimeout(() => {
@@ -57,20 +69,33 @@ const StudentSignup = () => {
     setError('');
     setIsLoading(true);
 
+    // Get university ID from localStorage
+    const universityId = localStorage.getItem('selected_university_id');
+
     try {
       const response = await connectToBackend('verify_otp', { 
         email: formData.email, 
         otp,
-        password: formData.password  // Send password for account creation
+        password: formData.password,  // Send password for account creation
+        universityId: universityId ? parseInt(universityId) : undefined
       });
 
       if (response.token) {
         // Store the JWT token using AuthContext
         login(response.token, { email: formData.email });
         
-        // Store student ID from response
+        // Store student ID and university ID from response
         if (response.student_id) {
           setStudentId(response.student_id);
+        }
+        if (response.university_id) {
+          setUniversityId(response.university_id);
+        }
+        
+        // Also store university name from localStorage if available
+        const universityName = localStorage.getItem('selected_university_name');
+        if (universityName) {
+          setUniversityName(universityName);
         }
         
         setSuccessMessage('Signup successful! Redirecting...');

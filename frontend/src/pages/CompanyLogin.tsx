@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { connectToBackend } from '../services/api';
-import { setCompanyId } from '../utils/auth';
+import { setCompanyId, setUniversityId, setUniversityName } from '../utils/auth';
 import '../App.css';
 
 const CompanyLogin: React.FC = () => {
@@ -24,9 +24,27 @@ const CompanyLogin: React.FC = () => {
     setError('');
     setLoading(true);
     
+    // Get the selected university ID from localStorage
+    const selectedUniversityId = localStorage.getItem('selected_university_id');
+    
+    console.log('CompanyLogin - University ID from localStorage:', selectedUniversityId);
+    
+    if (!selectedUniversityId) {
+      setError('University not selected. Please go back to landing page.');
+      setLoading(false);
+      return;
+    }
+    
+    console.log('CompanyLogin - Sending login request with:', { ...formData, universityId: selectedUniversityId });
+    
     // FIX 2: The 'try' block is now correctly inside the function
     try {
-      const response = await connectToBackend('company_login', formData);
+      const response = await connectToBackend('company_login', {
+        ...formData,
+        universityId: selectedUniversityId
+      });
+      
+      console.log('CompanyLogin - Response:', response);
       
       if (response.success && response.token) {
         // Store token
@@ -35,6 +53,16 @@ const CompanyLogin: React.FC = () => {
         // Store company ID from response
         if (response.company_id) {
           setCompanyId(response.company_id);
+        }
+        
+        // Store university ID from response
+        if (response.university_id) {
+          setUniversityId(response.university_id);
+          // Get university name from localStorage (set during university selection)
+          const universityName = localStorage.getItem('selected_university_name');
+          if (universityName) {
+            setUniversityName(universityName);
+          }
         }
         
         // Show local redirecting state (optional overlay)
@@ -49,9 +77,11 @@ const CompanyLogin: React.FC = () => {
         setError(response.message || 'Invalid credentials');
         setLoading(false);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Login error:", err);
-      setError('Server error. Please try again later.');
+      // Show the actual error message from backend
+      const errorMessage = err.response?.data?.message || err.message || 'Server error. Please try again later.';
+      setError(errorMessage);
       setLoading(false);
     }
   };

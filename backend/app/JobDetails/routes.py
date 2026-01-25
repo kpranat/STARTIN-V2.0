@@ -8,6 +8,7 @@ from datetime import datetime
 def setJobDetails():
     data = request.get_json()
     companyid = data.get("companyid")
+    universityId = data.get("universityId")
     title = data.get("title")
     type = data.get("type")
     salary = data.get("salary")
@@ -15,7 +16,7 @@ def setJobDetails():
     requirements = data.get("requirements")
     enddate_str = data.get("enddate")
 
-    if companyid:
+    if companyid and universityId:
         if title and type and salary and description and requirements and enddate_str:
             try:
                 enddate = datetime.fromisoformat(enddate_str.replace('Z', '+00:00'))
@@ -24,7 +25,16 @@ def setJobDetails():
             
             current_date = datetime.now()
             if enddate > current_date:
-                JobData = JobDetails(title=title, type=type, salary=salary, description=description, requirements=requirements, enddate=enddate, companyid=companyid)
+                JobData = JobDetails(
+                    title=title, 
+                    type=type, 
+                    salary=salary, 
+                    description=description, 
+                    requirements=requirements, 
+                    enddate=enddate, 
+                    companyid=companyid,
+                    universityid=universityId
+                )
                 db.session.add(JobData)
                 db.session.commit() 
                 return jsonify({"success": True, "message": "Added Job"}), 200
@@ -38,11 +48,19 @@ def setJobDetails():
 #=============================== show job details on the student side =========================================    
 @JobDetails_bp.route("/get/JobDetails",methods = ['POST','GET'])
 def getJobDetails():
-    jobs = JobDetails.query.all()
+    data = request.get_json() if request.method == 'POST' else {}
+    university_id = data.get("universityId")
+    
+    if not university_id:
+        return jsonify({"success": False, "message": "University ID is required"}), 400
+    
+    # Filter jobs by university ID
+    jobs = JobDetails.query.filter_by(universityid=university_id).all()
     job_list = []
     current_date = datetime.now()
+    
     for jobs_details in jobs:
-        companyquery = CompanyProfile.query.filter_by(id=jobs_details.companyid).first()
+        companyquery = CompanyProfile.query.filter_by(id=jobs_details.companyid, universityid=university_id).first()
         if companyquery:
             companyname = companyquery.name
             if jobs_details.enddate > current_date:
@@ -69,11 +87,15 @@ def getJobDetails():
 def getCompanyJobs():
     data = request.get_json()
     company_id = data.get("company_id")
+    university_id = data.get("universityId")
     
     if not company_id:
         return jsonify({"success": False, "message": "Company ID is required"}), 400
     
-    jobs = JobDetails.query.filter_by(companyid=company_id).all()
+    if not university_id:
+        return jsonify({"success": False, "message": "University ID is required"}), 400
+    
+    jobs = JobDetails.query.filter_by(companyid=company_id, universityid=university_id).all()
     
     jobs_data = []
     current_date = datetime.now()
@@ -102,15 +124,29 @@ def showApplicants():
         return jsonify({"success": False, "message": "Authentication Error. Login Again"}), 404
     companyid = data.get("companyid")
     jobid = data.get("jobid")
+    universityId = data.get("universityId")
+    
     if not companyid or not jobid:
         return jsonify({"success": False, "message": "Cant Access Details. Try Again Later"}), 400
     
+    if not universityId:
+        return jsonify({"success": False, "message": "University ID is required"}), 400
+    
     # Check if student has already applied to this job
-    existing_application = JobApplication.query.filter_by(studentid=studentid, jobid=jobid).first()
+    existing_application = JobApplication.query.filter_by(
+        studentid=studentid, 
+        jobid=jobid, 
+        universityid=universityId
+    ).first()
     if existing_application:
         return jsonify({"success": False, "message": "You have already applied to this job"}), 400
     
-    JobApplicationData = JobApplication(jobid = jobid,studentid = studentid,companyid=companyid)
+    JobApplicationData = JobApplication(
+        jobid=jobid,
+        studentid=studentid,
+        companyid=companyid,
+        universityid=universityId
+    )
     db.session.add(JobApplicationData)
     db.session.commit()
     return jsonify({"success": True, "message": "Your application was successful"}),200

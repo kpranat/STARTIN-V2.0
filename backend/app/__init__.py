@@ -56,6 +56,9 @@ def create_app():
     from app.adminAuth import adminAuth_bp
     app.register_blueprint(adminAuth_bp)
 
+    from app.universiytyDbUpdate import universityDbUpdate_bp
+    app.register_blueprint(universityDbUpdate_bp)
+
     # Route to serve uploaded resume files
     @app.route('/uploads/resumes/<filename>')
     def serve_resume(filename):

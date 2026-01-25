@@ -17,11 +17,15 @@ def CheckStudentProfile():
         
     data = request.get_json()
     student_id = data.get("student_id")
+    university_id = data.get("universityId")
     
     if not student_id:
         return jsonify({"success": False, "message": "Student ID required"}), 400
+    
+    if not university_id:
+        return jsonify({"success": False, "message": "University ID required"}), 400
         
-    profile = StudentProfile.query.filter_by(id=student_id).first()
+    profile = StudentProfile.query.filter_by(id=student_id, universityid=university_id).first()
     if profile:
         return jsonify({
             "success": True, 
@@ -45,6 +49,7 @@ def StudentProfileSetup():
         return jsonify({}), 200
         
     student_id = request.form.get("student_id")
+    university_id = request.form.get("universityId")
     fullName = request.form.get("fullName")
     about = request.form.get("about")
     skills = request.form.get("skills")
@@ -53,9 +58,12 @@ def StudentProfileSetup():
     
     if not student_id:
         return jsonify({"success": False, "message": "Student ID required"}), 400
+    
+    if not university_id:
+        return jsonify({"success": False, "message": "University ID required"}), 400
         
     # Check if profile already exists
-    if StudentProfile.query.filter_by(id=student_id).first():
+    if StudentProfile.query.filter_by(id=student_id, universityid=university_id).first():
         return jsonify({"success": False, "message": "Profile Already Setup"}), 400
     
     if not fullName:
@@ -81,7 +89,8 @@ def StudentProfileSetup():
         skills=skills,
         github=github,
         linkedin=linkedin,
-        resume=resume_filename
+        resume=resume_filename,
+        universityid=university_id
     )
     db.session.add(StudentProfileData)
     db.session.commit()
@@ -94,6 +103,7 @@ def StudentProfileUpdate():
         return jsonify({}), 200
         
     student_id = request.form.get("student_id")
+    university_id = request.form.get("universityId")
     fullName = request.form.get("fullName")
     about = request.form.get("about")
     skills = request.form.get("skills")
@@ -102,8 +112,11 @@ def StudentProfileUpdate():
     
     if not student_id:
         return jsonify({"success": False, "message": "Student ID required"}), 400
+    
+    if not university_id:
+        return jsonify({"success": False, "message": "University ID required"}), 400
         
-    student_data = StudentProfile.query.filter_by(id=student_id).first()
+    student_data = StudentProfile.query.filter_by(id=student_id, universityid=university_id).first()
     
     if not student_data:
         return jsonify({"success": False, "message": "Profile not found"}), 404

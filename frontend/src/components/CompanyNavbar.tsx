@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getUniversityName } from '../utils/auth';
 import '../App.css';
 
 const CompanyNavbar: React.FC = () => {
   const navigate = useNavigate();
+  const universityName = getUniversityName();
 
   const handleLogout = () => {
     // Clear any company session data
@@ -15,6 +17,19 @@ const CompanyNavbar: React.FC = () => {
     <nav className="navbar">
       <div className="logo" style={{ color: '#0f766e' }}> {/* Teal color for Company side */}
         InternHub <span style={{ fontSize: '0.8rem', color: '#777' }}>| Company</span>
+        {universityName && (
+          <span style={{ 
+            marginLeft: '15px', 
+            fontSize: '0.75rem', 
+            background: '#0f766e', 
+            color: 'white', 
+            padding: '4px 10px', 
+            borderRadius: '12px',
+            fontWeight: 'bold'
+          }}>
+            🎓 {universityName}
+          </span>
+        )}
       </div>
 
       <div className="nav-links">

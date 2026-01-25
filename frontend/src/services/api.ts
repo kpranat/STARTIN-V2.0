@@ -1,6 +1,6 @@
 // src/services/api.ts
 import axios from 'axios';
-import { getToken, removeToken } from '../utils/auth';
+import { getToken, removeToken, getUniversityId } from '../utils/auth';
 
 const API_BASE_URL = 'http://127.0.0.1:5000';
 
@@ -90,24 +90,36 @@ export const connectToBackend = async (actionType: string, data: any) => {
   }
 };
 
-// Protected API calls (automatically includes JWT token)
+// Protected API calls (automatically includes JWT token and university ID)
 export const api = {
   // Student endpoints
   student: {
     checkProfile: (studentId: string | number) => 
-      apiClient.post('/check/StudentProfile', { student_id: studentId }),
-    setupProfile: (formData: FormData) => 
-      apiClient.post('/setup/StudentProfile', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      apiClient.post('/check/StudentProfile', { 
+        student_id: studentId,
+        universityId: getUniversityId()
       }),
-    updateProfile: (formData: FormData) => 
-      apiClient.post('/update/StudentProfile', formData, {
+    setupProfile: (formData: FormData) => {
+      formData.append('universityId', getUniversityId() || '');
+      return apiClient.post('/setup/StudentProfile', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
-      }),
+      });
+    },
+    updateProfile: (formData: FormData) => {
+      formData.append('universityId', getUniversityId() || '');
+      return apiClient.post('/update/StudentProfile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+    },
     getProfile: () => apiClient.get('/student/profile'),
-    getJobs: () => apiClient.post('/get/JobDetails'),
+    getJobs: () => apiClient.post('/get/JobDetails', {
+      universityId: getUniversityId()
+    }),
     applyJob: (data: { studentid: string | number; companyid: string | number; jobid: string | number }) => 
-      apiClient.post('/get/applicants', data),
+      apiClient.post('/get/applicants', {
+        ...data,
+        universityId: getUniversityId()
+      }),
     getAppliedJobs: () => apiClient.get('/student/applied-jobs'),
     getAppliedJobIds: (data: { studentid: string | number }) => 
       apiClient.post('/get/student/appliedJobs', data),
@@ -118,14 +130,29 @@ export const api = {
   // Company endpoints
   company: {
     checkProfile: (companyId: string | number) => 
-      apiClient.post('/check/CompanyProfile', { company_id: companyId }),
+      apiClient.post('/check/CompanyProfile', { 
+        company_id: companyId,
+        universityId: getUniversityId()
+      }),
     setupProfile: (data: any) => 
-      apiClient.post('/setup/CompanyProfile', data),
+      apiClient.post('/setup/CompanyProfile', {
+        ...data,
+        universityId: getUniversityId()
+      }),
     updateProfile: (data: any) => 
-      apiClient.post('/update/CompanyProfile', data),
+      apiClient.post('/update/CompanyProfile', {
+        ...data,
+        universityId: getUniversityId()
+      }),
     getProfile: () => apiClient.get('/company/profile'),
-    postJob: (data: any) => apiClient.post('/set/JobDetails', data),
-    getJobs: (data: any) => apiClient.post('/get/CompanyJobs', data),
+    postJob: (data: any) => apiClient.post('/set/JobDetails', {
+      ...data,
+      universityId: getUniversityId()
+    }),
+    getJobs: (data: any) => apiClient.post('/get/CompanyJobs', {
+      ...data,
+      universityId: getUniversityId()
+    }),
     getApplicants: (data: { compnayid: string | number }) => 
       apiClient.post('/set/jobApplicantData/companyportal', data),
     updateApplicationStatus: (data: { application_id: number; status: string }) =>
