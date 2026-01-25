@@ -115,7 +115,64 @@ def VerifyOTP():
         db.session.rollback()
         print(f"Error in VerifyOTP: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
-    
+
+#HANDLE RESEND OTP ===========================================================================    
+@StudentSignup_bp.route("/auth/ResendOTP",methods = ['POST'])
+def ResendOTP():
+    try:
+        data = request.get_json()
+        email = data.get("email")
+        university_id = data.get("universityId")
+        
+        if not all([email, university_id]):
+            return jsonify({"error": "Email and university ID are required"}), 400
+        
+        # Get the existing OTP record
+        record = otpVerification.query.filter_by(email=email, universityid=university_id).first()
+        
+        if not record:
+            return jsonify({"error": "No OTP request found. Please signup again."}), 404
+        
+        # Check if 10 minutes have passed since the OTP was created
+        created_at = record.created_at
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        
+        time_elapsed = datetime.now(timezone.utc) - created_at
+        
+        if time_elapsed < timedelta(minutes=10):
+            # Calculate remaining time
+            remaining_seconds = int((timedelta(minutes=10) - time_elapsed).total_seconds())
+            return jsonify({
+                "error": "Please wait before requesting a new OTP",
+                "remainingSeconds": remaining_seconds
+            }), 429
+        
+        # Generate new OTP
+        new_otp = str(random.randint(100000, 999999))
+        
+        # Update the existing record
+        record.otp = new_otp
+        current_time = datetime.now(timezone.utc)
+        record.created_at = current_time
+        record.expires_at = current_time + timedelta(minutes=10)
+        db.session.commit()
+        
+        # Send email
+        try:
+            msg = Message("Your New OTP Code for STARTIN is", recipients=[email])
+            msg.body = f"Your new OTP is {new_otp}. Valid for 10 minutes."
+            mail.send(msg)
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+            # For testing, continue without email
+        
+        return jsonify({"success": True, "message": "New OTP sent successfully"}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error in ResendOTP: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
     
     
 

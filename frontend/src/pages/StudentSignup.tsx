@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { connectToBackend } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useAuth } from '../context/AuthContext'; 
@@ -12,12 +12,39 @@ const StudentSignup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [remainingTime, setRemainingTime] = useState(600); // 10 minutes in seconds
+  const [canResend, setCanResend] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: ''
   });
+
+  // Timer effect for countdown
+  useEffect(() => {
+    if (step === 2) {
+      const timer = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev <= 1) {
+            setCanResend(true);
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [step]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -115,6 +142,43 @@ const StudentSignup = () => {
     }
   };
 
+  const handleResendOTP = async () => {
+    setError('');
+    setIsResending(true);
+
+    const universityId = localStorage.getItem('selected_university_id');
+    if (!universityId) {
+      setError('University ID not found');
+      setIsResending(false);
+      return;
+    }
+
+    try {
+      const response = await connectToBackend('resend_otp', {
+        email: formData.email,
+        universityId: parseInt(universityId)
+      });
+
+      if (response.message) {
+        setSuccessMessage('New OTP sent successfully! Please check your email.');
+        setRemainingTime(600); // Reset to 10 minutes
+        setCanResend(false);
+        setTimeout(() => setSuccessMessage(''), 3000);
+      }
+    } catch (err: any) {
+      if (err.response?.status === 429 && err.response?.data?.remainingSeconds) {
+        setRemainingTime(err.response.data.remainingSeconds);
+        setCanResend(false);
+        setError(`Please wait ${formatTime(err.response.data.remainingSeconds)} before requesting a new OTP`);
+      } else {
+        setError(err.response?.data?.error || 'Failed to resend OTP');
+      }
+      console.error('Resend OTP error:', err);
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   // OTP Verification Screen
   if (step === 2) {
     return (
@@ -154,6 +218,28 @@ const StudentSignup = () => {
             {isLoading ? 'Verifying...' : 'Verify OTP'}
           </button>
         </form>
+        <div style={{ marginTop: '15px' }}>
+          {!canResend ? (
+            <p style={{ fontSize: '0.9rem', color: '#666' }}>
+              Resend OTP available in: <strong>{formatTime(remainingTime)}</strong>
+            </p>
+          ) : (
+            <button 
+              onClick={handleResendOTP} 
+              disabled={isResending}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: '#007bff', 
+                cursor: isResending ? 'not-allowed' : 'pointer', 
+                textDecoration: 'underline',
+                fontSize: '0.9rem'
+              }}
+            >
+              {isResending ? 'Sending...' : 'Resend OTP'}
+            </button>
+          )}
+        </div>
         <p>
           <button onClick={() => setStep(1)} style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', textDecoration: 'underline' }}>
             Go back

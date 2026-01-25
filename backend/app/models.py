@@ -29,12 +29,15 @@ class otpVerification(db.Model):
     otp = db.Column(db.String(6), nullable=False)
     email = db.Column(db.String(255),nullable = False)
     expires_at = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False)  # Track when OTP was sent
     universityid = db.Column(db.Integer,db.ForeignKey("universitytable.id"),nullable = False)
     #validate OTP for 10min then invalidate it
     def __init__(self, email, otp):
         self.email = email
         self.otp = otp
-        self.expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
+        current_time = datetime.now(timezone.utc)
+        self.created_at = current_time
+        self.expires_at = current_time + timedelta(minutes=10)
 #============================= Company Auth Table ======================================
 class companyAuth(db.Model):
     id = db.Column(db.Integer,primary_key = True)

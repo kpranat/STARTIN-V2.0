@@ -61,6 +61,10 @@ export const connectToBackend = async (actionType: string, data: any) => {
         response = await axios.post(`${API_BASE_URL}/auth/VerifyOTP`, data);
         return response.data;
         
+      case 'resend_otp':
+        response = await axios.post(`${API_BASE_URL}/auth/ResendOTP`, data);
+        return response.data;
+        
       case 'student_login':
         response = await axios.post(`${API_BASE_URL}/auth/StudentLogin`, data);
         return response.data;
@@ -71,6 +75,10 @@ export const connectToBackend = async (actionType: string, data: any) => {
         
       case 'company_verify_otp':
         response = await axios.post(`${API_BASE_URL}/auth/CompanyVerifyOTP`, data);
+        return response.data;
+        
+      case 'company_resend_otp':
+        response = await axios.post(`${API_BASE_URL}/auth/CompanyResendOTP`, data);
         return response.data;
         
       case 'company_login':
