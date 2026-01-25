@@ -45,20 +45,32 @@ const Landing: React.FC = () => {
           </div>
         </div>
 
-        {/* Admin Login Link */}
+        {/* Admin Login Button */}
         <div style={{ marginTop: '30px', textAlign: 'center' }}>
           <button 
             onClick={() => navigate('/admin/login')}
             style={{ 
-              background: 'none', 
-              border: 'none', 
-              color: '#dc2626', 
+              background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)', 
+              border: '2px solid #dc2626', 
+              color: 'white',
+              padding: '12px 32px',
+              borderRadius: '8px',
               cursor: 'pointer', 
-              fontSize: '0.85rem',
-              textDecoration: 'underline'
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              boxShadow: '0 4px 6px rgba(220, 38, 38, 0.2)',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 12px rgba(220, 38, 38, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(220, 38, 38, 0.2)';
             }}
           >
-            Admin Login
+            🔐 Admin Login
           </button>
         </div>
       </div>
