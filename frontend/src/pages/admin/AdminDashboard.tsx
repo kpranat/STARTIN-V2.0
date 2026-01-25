@@ -10,14 +10,44 @@ interface University {
   passkey: string;
 }
 
+interface Company {
+  passkey: string;
+  hashedPasskey?: string;  // Store hashed version for delete operations
+  mailId: string;
+  name: string;
+  registered: boolean;
+  profileComplete?: boolean;
+}
+
+interface RegisteredCompany {
+  id: number;
+  email: string;
+  universityId: number;
+  name: string;
+  website: string;
+  location: string;
+  about: string;
+  profileComplete: boolean;
+}
+
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [adminId, setAdminId] = useState<string | null>(null);
   const [showUniversityModal, setShowUniversityModal] = useState(false);
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [universities, setUniversities] = useState<University[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [registeredCompanies, setRegisteredCompanies] = useState<RegisteredCompany[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+  const [companyTab, setCompanyTab] = useState<'verification' | 'registered'>('verification');
+  const [showAddCompanyForm, setShowAddCompanyForm] = useState(false);
+  const [newCompany, setNewCompany] = useState({
+    passkey: '',
+    mailId: '',
+    name: ''
+  });
 
   useEffect(() => {
     // Check if admin is authenticated
@@ -133,6 +163,158 @@ const AdminDashboard: React.FC = () => {
     setUploadMessage(null);
   };
 
+  const fetchCompanies = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://localhost:5000/admin/companies/verification');
+      if (response.data.success) {
+        setCompanies(response.data.companies);
+      }
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+      setUploadMessage({ type: 'error', text: 'Failed to fetch companies' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRegisteredCompanies = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://localhost:5000/admin/companies/registered');
+      if (response.data.success) {
+        setRegisteredCompanies(response.data.companies);
+      }
+    } catch (error) {
+      console.error('Error fetching registered companies:', error);
+      setUploadMessage({ type: 'error', text: 'Failed to fetch registered companies' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openCompanyModal = () => {
+    setShowCompanyModal(true);
+    setUploadMessage(null);
+    fetchCompanies();
+    fetchRegisteredCompanies();
+  };
+
+  const closeCompanyModal = () => {
+    setShowCompanyModal(false);
+    setUploadFile(null);
+    setUploadMessage(null);
+    setShowAddCompanyForm(false);
+    setNewCompany({ passkey: '', mailId: '', name: '' });
+  };
+
+  const handleCompanyFileUpload = async () => {
+    if (!uploadFile) {
+      setUploadMessage({ type: 'error', text: 'Please select a file' });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/admin/companies/upload',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      if (response.data.success) {
+        setUploadMessage({
+          type: 'success',
+          text: response.data.message
+        });
+        setUploadFile(null);
+        // Add newly uploaded companies
+        if (response.data.addedCompanies && response.data.addedCompanies.length > 0) {
+          const newCompanies = response.data.addedCompanies.map((c: any) => ({
+            ...c,
+            registered: false
+          }));
+          setCompanies([...newCompanies, ...companies]);
+        } else {
+          fetchCompanies();
+        }
+      }
+    } catch (error: any) {
+      setUploadMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Failed to upload file'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGeneratePasskey = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/admin/companies/generate-passkey');
+      if (response.data.success) {
+        setNewCompany({ ...newCompany, passkey: response.data.passkey });
+      }
+    } catch (error) {
+      setUploadMessage({ type: 'error', text: 'Failed to generate passkey' });
+    }
+  };
+
+  const handleAddCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await axios.post('http://localhost:5000/admin/companies/add', newCompany);
+      if (response.data.success) {
+        setUploadMessage({ type: 'success', text: 'Company added successfully' });
+        setShowAddCompanyForm(false);
+        // Add the new company to the list
+        if (response.data.company) {
+          setCompanies([response.data.company, ...companies]);
+        }
+        setNewCompany({ passkey: '', mailId: '', name: '' });
+      }
+    } catch (error: any) {
+      setUploadMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Failed to add company'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCompany = async (company: Company) => {
+    if (!window.confirm('Are you sure you want to delete this company?')) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Use hashedPasskey for deletion if available, otherwise use passkey
+      const passkeyToDelete = company.hashedPasskey || company.passkey;
+      const response = await axios.delete(`http://localhost:5000/admin/companies/${encodeURIComponent(passkeyToDelete)}`);
+      if (response.data.success) {
+        setUploadMessage({ type: 'success', text: 'Company deleted successfully' });
+        fetchCompanies();
+      }
+    } catch (error: any) {
+      setUploadMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Failed to delete company'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="landing-container">
       <div style={{ 
@@ -208,11 +390,17 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           {/* Manage Companies */}
-          <div className="card" style={{
-            padding: '30px',
-            cursor: 'pointer',
-            transition: 'transform 0.2s'
-          }}>
+          <div 
+            className="card" 
+            onClick={openCompanyModal}
+            style={{
+              padding: '30px',
+              cursor: 'pointer',
+              transition: 'transform 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
             <div style={{
               fontSize: '3rem',
               marginBottom: '15px'
@@ -443,6 +631,417 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Company Management Modal */}
+        {showCompanyModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}>
+            <div style={{
+              background: 'white',
+              borderRadius: '10px',
+              padding: '30px',
+              maxWidth: '1000px',
+              width: '100%',
+              maxHeight: '85vh',
+              overflow: 'auto'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px'
+              }}>
+                <h2 style={{ color: '#0f766e', margin: 0 }}>Manage Companies</h2>
+                <button
+                  onClick={closeCompanyModal}
+                  style={{
+                    background: '#dc2626',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    padding: '8px 16px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+
+              {/* Tab Navigation */}
+              <div style={{
+                display: 'flex',
+                gap: '10px',
+                marginBottom: '20px',
+                borderBottom: '2px solid #e5e7eb'
+              }}>
+                <button
+                  onClick={() => {
+                    setCompanyTab('verification');
+                    fetchCompanies();
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: companyTab === 'verification' ? '3px solid #0f766e' : 'none',
+                    color: companyTab === 'verification' ? '#0f766e' : '#666',
+                    cursor: 'pointer',
+                    fontWeight: companyTab === 'verification' ? 'bold' : 'normal'
+                  }}
+                >
+                  Company Verification ({companies.length})
+                </button>
+                <button
+                  onClick={() => {
+                    setCompanyTab('registered');
+                    fetchRegisteredCompanies();
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: companyTab === 'registered' ? '3px solid #0f766e' : 'none',
+                    color: companyTab === 'registered' ? '#0f766e' : '#666',
+                    cursor: 'pointer',
+                    fontWeight: companyTab === 'registered' ? 'bold' : 'normal'
+                  }}
+                >
+                  Registered Companies ({registeredCompanies.length})
+                </button>
+              </div>
+
+              {uploadMessage && (
+                <div style={{
+                  marginBottom: '15px',
+                  padding: '10px',
+                  borderRadius: '5px',
+                  background: uploadMessage.type === 'success' ? '#d1fae5' : '#fee2e2',
+                  color: uploadMessage.type === 'success' ? '#059669' : '#dc2626',
+                  fontSize: '0.9rem'
+                }}>
+                  {uploadMessage.text}
+                </div>
+              )}
+
+              {/* Company Verification Tab */}
+              {companyTab === 'verification' && (
+                <>
+                  {/* Upload Section */}
+                  <div style={{
+                    background: '#f0fdf4',
+                    padding: '20px',
+                    borderRadius: '8px',
+                    marginBottom: '20px'
+                  }}>
+                    <h3 style={{ color: '#0f766e', marginBottom: '15px' }}>Upload Companies</h3>
+                    <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '15px' }}>
+                      Upload a CSV or Excel file with columns: <code>passkey</code>, <code>mailId</code>, and <code>name</code>
+                    </p>
+                    
+                    <div style={{ marginBottom: '15px' }}>
+                      <input
+                        type="file"
+                        accept=".csv,.xlsx,.xls"
+                        onChange={handleFileChange}
+                        style={{
+                          padding: '10px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '5px',
+                          width: '100%'
+                        }}
+                      />
+                    </div>
+
+                    <button
+                      onClick={handleCompanyFileUpload}
+                      disabled={!uploadFile || loading}
+                      style={{
+                        padding: '10px 20px',
+                        background: uploadFile && !loading ? '#0f766e' : '#d1d5db',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: uploadFile && !loading ? 'pointer' : 'not-allowed',
+                        fontSize: '0.9rem',
+                        marginRight: '10px'
+                      }}
+                    >
+                      {loading ? 'Processing...' : 'Upload File'}
+                    </button>
+
+                    <button
+                      onClick={() => setShowAddCompanyForm(!showAddCompanyForm)}
+                      style={{
+                        padding: '10px 20px',
+                        background: '#0f766e',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      {showAddCompanyForm ? 'Cancel' : 'Add Company Manually'}
+                    </button>
+                  </div>
+
+                  {/* Manual Add Form */}
+                  {showAddCompanyForm && (
+                    <form onSubmit={handleAddCompany} style={{
+                      background: '#fef3c7',
+                      padding: '20px',
+                      borderRadius: '8px',
+                      marginBottom: '20px'
+                    }}>
+                      <h3 style={{ color: '#92400e', marginBottom: '15px' }}>Add Company</h3>
+                      <div style={{ marginBottom: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+                          Passkey
+                        </label>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <input
+                            type="text"
+                            value={newCompany.passkey}
+                            onChange={(e) => setNewCompany({ ...newCompany, passkey: e.target.value })}
+                            required
+                            style={{
+                              flex: 1,
+                              padding: '10px',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '5px'
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={handleGeneratePasskey}
+                            style={{
+                              padding: '10px 15px',
+                              background: '#92400e',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '5px',
+                              cursor: 'pointer',
+                              fontSize: '0.9rem'
+                            }}
+                          >
+                            Generate
+                          </button>
+                        </div>
+                      </div>
+                      <div style={{ marginBottom: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          value={newCompany.mailId}
+                          onChange={(e) => setNewCompany({ ...newCompany, mailId: e.target.value })}
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '10px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '5px'
+                          }}
+                        />
+                      </div>
+                      <div style={{ marginBottom: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '5px', color: '#666' }}>
+                          Company Name
+                        </label>
+                        <input
+                          type="text"
+                          value={newCompany.name}
+                          onChange={(e) => setNewCompany({ ...newCompany, name: e.target.value })}
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '10px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '5px'
+                          }}
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        style={{
+                          padding: '10px 20px',
+                          background: loading ? '#d1d5db' : '#92400e',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '5px',
+                          cursor: loading ? 'not-allowed' : 'pointer',
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        {loading ? 'Adding...' : 'Add Company'}
+                      </button>
+                    </form>
+                  )}
+
+                  {/* Companies List */}
+                  <div>
+                    <h3 style={{ color: '#0f766e', marginBottom: '15px' }}>
+                      Companies in Verification Table
+                    </h3>
+                    
+                    {loading ? (
+                      <p style={{ textAlign: 'center', color: '#666' }}>Loading...</p>
+                    ) : companies.length === 0 ? (
+                      <p style={{ textAlign: 'center', color: '#666' }}>No companies found</p>
+                    ) : (
+                      <div style={{ maxHeight: '300px', overflow: 'auto' }}>
+                        <table style={{
+                          width: '100%',
+                          borderCollapse: 'collapse'
+                        }}>
+                          <thead>
+                            <tr style={{ background: '#f3f4f6' }}>
+                              <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #d1d5db' }}>Passkey</th>
+                              <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #d1d5db' }}>Email</th>
+                              <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #d1d5db' }}>Name</th>
+                              <th style={{ padding: '10px', textAlign: 'center', borderBottom: '2px solid #d1d5db' }}>Status</th>
+                              <th style={{ padding: '10px', textAlign: 'center', borderBottom: '2px solid #d1d5db' }}>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {companies.map((company, index) => (
+                              <tr key={`${company.passkey}-${index}`} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                                <td style={{ padding: '10px', fontSize: '0.8rem', fontFamily: 'monospace' }}>
+                                  {company.passkey}
+                                </td>
+                                <td style={{ padding: '10px' }}>{company.mailId}</td>
+                                <td style={{ padding: '10px' }}>{company.name}</td>
+                                <td style={{ padding: '10px', textAlign: 'center' }}>
+                                  {company.registered ? (
+                                    <span style={{ 
+                                      background: '#d1fae5', 
+                                      color: '#059669', 
+                                      padding: '4px 8px', 
+                                      borderRadius: '4px',
+                                      fontSize: '0.8rem'
+                                    }}>
+                                      ✓ Registered
+                                    </span>
+                                  ) : (
+                                    <span style={{ 
+                                      background: '#fee2e2', 
+                                      color: '#dc2626', 
+                                      padding: '4px 8px', 
+                                      borderRadius: '4px',
+                                      fontSize: '0.8rem'
+                                    }}>
+                                      Not Registered
+                                    </span>
+                                  )}
+                                </td>
+                                <td style={{ padding: '10px', textAlign: 'center' }}>
+                                  <button
+                                    onClick={() => handleDeleteCompany(company)}
+                                    disabled={loading}
+                                    style={{
+                                      padding: '5px 10px',
+                                      background: '#dc2626',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '4px',
+                                      cursor: loading ? 'not-allowed' : 'pointer',
+                                      fontSize: '0.8rem'
+                                    }}
+                                  >
+                                    Delete
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Registered Companies Tab */}
+              {companyTab === 'registered' && (
+                <div>
+                  <h3 style={{ color: '#0f766e', marginBottom: '15px' }}>
+                    Registered Companies
+                  </h3>
+                  
+                  {loading ? (
+                    <p style={{ textAlign: 'center', color: '#666' }}>Loading...</p>
+                  ) : registeredCompanies.length === 0 ? (
+                    <p style={{ textAlign: 'center', color: '#666' }}>No registered companies found</p>
+                  ) : (
+                    <div style={{ maxHeight: '400px', overflow: 'auto' }}>
+                      <table style={{
+                        width: '100%',
+                        borderCollapse: 'collapse'
+                      }}>
+                        <thead>
+                          <tr style={{ background: '#f3f4f6' }}>
+                            <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #d1d5db' }}>ID</th>
+                            <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #d1d5db' }}>Email</th>
+                            <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #d1d5db' }}>Name</th>
+                            <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #d1d5db' }}>Location</th>
+                            <th style={{ padding: '10px', textAlign: 'center', borderBottom: '2px solid #d1d5db' }}>Profile Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {registeredCompanies.map((company) => (
+                            <tr key={company.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                              <td style={{ padding: '10px' }}>{company.id}</td>
+                              <td style={{ padding: '10px' }}>{company.email}</td>
+                              <td style={{ padding: '10px' }}>{company.name}</td>
+                              <td style={{ padding: '10px' }}>{company.location || 'N/A'}</td>
+                              <td style={{ padding: '10px', textAlign: 'center' }}>
+                                {company.profileComplete ? (
+                                  <span style={{ 
+                                    background: '#d1fae5', 
+                                    color: '#059669', 
+                                    padding: '4px 8px', 
+                                    borderRadius: '4px',
+                                    fontSize: '0.8rem'
+                                  }}>
+                                    ✓ Complete
+                                  </span>
+                                ) : (
+                                  <span style={{ 
+                                    background: '#fef3c7', 
+                                    color: '#92400e', 
+                                    padding: '4px 8px', 
+                                    borderRadius: '4px',
+                                    fontSize: '0.8rem'
+                                  }}>
+                                    Incomplete
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}

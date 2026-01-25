@@ -1,6 +1,12 @@
 from .extensions import db
 from datetime import datetime, timedelta, timezone
 
+# ============================== company verification =====================================
+class companyVerification(db.Model):
+    passkey = db.Column(db.String(500),primary_key = True,nullable = False)
+    mailId = db.Column(db.String(500),primary_key = True,nullable = False)
+    name= db.Column(db.String(255),nullable = False)
+
 #=============================== admin auth ================================================
 class adminAuth(db.Model):
     id = db.Column(db.Integer,primary_key = True,nullable = False)

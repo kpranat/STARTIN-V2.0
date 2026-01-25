@@ -18,7 +18,7 @@ const CompanySignup = () => {
 
   // State to hold form data
   const [formData, setFormData] = useState({
-    name: '',
+    passkey: '',
     email: '',
     password: ''
   });
@@ -217,9 +217,9 @@ const CompanySignup = () => {
             <div style={{ textAlign: 'left', marginBottom: '15px' }}>
               <input 
                 type="text" 
-                name="name" 
-                placeholder="Company Name" 
-                value={formData.name}
+                name="passkey" 
+                placeholder="Company Passkey" 
+                value={formData.passkey}
                 onChange={handleChange} 
                 required 
                 disabled={loading}

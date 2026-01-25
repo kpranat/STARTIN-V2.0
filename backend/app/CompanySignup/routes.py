@@ -1,24 +1,36 @@
 from . import CompanySignup_bp
 from flask import request,jsonify,current_app
-from app.models import companyAuth,otpVerification,db
+from app.models import companyAuth,otpVerification,companyVerification,db
 import random
 from app.extensions import mail
 from flask_mail import Message
 from datetime import datetime, timezone, timedelta
 import jwt
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash,check_password_hash
 #HANDLE COMPNAY SIGNUP ==========================================================================
 @CompanySignup_bp.route("/auth/CompanySignup",methods = ['POST'])
 def StudentSignUp():
     data = request.get_json()
     #extract data
-    name = data.get("name")
+    passkey = data.get("passkey")
     email = data.get("email")
     password = data.get("password")
     universityId = data.get("universityId")
     # Validation
-    if not all([name, email, password, universityId]):
-        return jsonify({"success": False, "message": "All fields are required"}), 400     
+    if not all([passkey, email, password, universityId]):
+        return jsonify({"success": False, "message": "All fields are required"}), 400
+    
+    # Verify passkey against companyVerification table (passkeys are hashed)
+    all_companies = companyVerification.query.all()
+    company_verification = None
+    for company in all_companies:
+        if check_password_hash(company.passkey, passkey):
+            company_verification = company
+            break
+    
+    if not company_verification:
+        return jsonify({"success": False, "message": "Invalid passkey"}), 403
+    
     #check if mail exist in this university
     existing_mail = companyAuth.query.filter_by(email=email, universityid=universityId).first()
     if (existing_mail):
