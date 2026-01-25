@@ -1,7 +1,7 @@
 from . import adminAuth_bp
 from flask import request,jsonify,current_app
 from werkzeug.security import check_password_hash
-from app.models import adminAuth, studentAuth, StudentProfile, universitytable
+from app.models import adminAuth, studentAuth, StudentProfile, universitytable, JobDetails, CompanyProfile
 from datetime import datetime, timezone, timedelta
 import jwt
 
@@ -75,4 +75,61 @@ def getStudents():
         return jsonify({
             "success": False,
             "message": f"Error fetching students: {str(e)}"
+        }), 500
+
+#get all job postings route=========================================================
+@adminAuth_bp.route("/api/admin/jobs",methods = ['GET'])
+def getJobs():
+    try:
+        # Join JobDetails with CompanyProfile and universitytable to get all job details
+        jobs = JobDetails.query.join(
+            CompanyProfile, JobDetails.companyid == CompanyProfile.id
+        ).join(
+            universitytable, JobDetails.universityid == universitytable.id
+        ).with_entities(
+            JobDetails.id,
+            JobDetails.title,
+            JobDetails.type,
+            JobDetails.salary,
+            JobDetails.description,
+            JobDetails.requirements,
+            JobDetails.enddate,
+            CompanyProfile.name.label('companyName'),
+            CompanyProfile.id.label('companyId'),
+            universitytable.universityName,
+            universitytable.id.label('universityId')
+        ).all()
+        
+        # Format the results
+        jobs_list = []
+        current_date = datetime.now()
+        
+        for job in jobs:
+            # Determine if job is active or inactive based on end date
+            status = "active" if job.enddate > current_date else "inactive"
+            
+            jobs_list.append({
+                "id": job.id,
+                "title": job.title,
+                "type": job.type,
+                "salary": job.salary,
+                "description": job.description,
+                "requirements": job.requirements,
+                "enddate": job.enddate.isoformat(),
+                "companyName": job.companyName,
+                "companyId": job.companyId,
+                "universityName": job.universityName,
+                "universityId": job.universityId,
+                "status": status
+            })
+        
+        return jsonify({
+            "success": True,
+            "jobs": jobs_list
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Error fetching jobs: {str(e)}"
         }), 500

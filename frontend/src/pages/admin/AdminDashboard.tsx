@@ -37,16 +37,33 @@ interface Student {
   universityId: number;
 }
 
+interface Job {
+  id: number;
+  title: string;
+  type: string;
+  salary: string;
+  description: string;
+  requirements: string;
+  enddate: string;
+  companyName: string;
+  companyId: number;
+  universityName: string;
+  universityId: number;
+  status: 'active' | 'inactive';
+}
+
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [adminId, setAdminId] = useState<string | null>(null);
   const [showUniversityModal, setShowUniversityModal] = useState(false);
   const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [showStudentModal, setShowStudentModal] = useState(false);
+  const [showJobModal, setShowJobModal] = useState(false);
   const [universities, setUniversities] = useState<University[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [registeredCompanies, setRegisteredCompanies] = useState<RegisteredCompany[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
@@ -315,6 +332,21 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const fetchJobs = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://localhost:5000/api/admin/jobs');
+      if (response.data.success) {
+        setJobs(response.data.jobs);
+      }
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      setUploadMessage({ type: 'error', text: 'Failed to fetch job postings' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const openStudentModal = () => {
     setShowStudentModal(true);
     setUploadMessage(null);
@@ -323,6 +355,17 @@ const AdminDashboard: React.FC = () => {
 
   const closeStudentModal = () => {
     setShowStudentModal(false);
+    setUploadMessage(null);
+  };
+
+  const openJobModal = () => {
+    setShowJobModal(true);
+    setUploadMessage(null);
+    fetchJobs();
+  };
+
+  const closeJobModal = () => {
+    setShowJobModal(false);
     setUploadMessage(null);
   };
 
@@ -453,11 +496,17 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           {/* Job Postings */}
-          <div className="card" style={{
-            padding: '30px',
-            cursor: 'pointer',
-            transition: 'transform 0.2s'
-          }}>
+          <div 
+            className="card" 
+            onClick={openJobModal}
+            style={{
+              padding: '30px',
+              cursor: 'pointer',
+              transition: 'transform 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
             <div style={{
               fontSize: '3rem',
               marginBottom: '15px'
@@ -1207,6 +1256,188 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Job Postings Modal */}
+        {showJobModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}>
+            <div style={{
+              background: 'white',
+              borderRadius: '10px',
+              padding: '30px',
+              maxWidth: '1200px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'auto'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px'
+              }}>
+                <h2 style={{ color: '#7c3aed', margin: 0 }}>Job Postings</h2>
+                <button
+                  onClick={closeJobModal}
+                  style={{
+                    background: '#dc2626',
+                    color: 'white',
+                    border: 'none',
+                    padding: '8px 20px',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    fontSize: '1rem'
+                  }}
+                >
+                  ✕ Close
+                </button>
+              </div>
+
+              {uploadMessage && (
+                <div style={{
+                  padding: '10px',
+                  marginBottom: '20px',
+                  borderRadius: '5px',
+                  background: uploadMessage.type === 'success' ? '#d1fae5' : '#fee2e2',
+                  color: uploadMessage.type === 'success' ? '#065f46' : '#991b1b'
+                }}>
+                  {uploadMessage.text}
+                </div>
+              )}
+
+              {loading ? (
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                  <p>Loading job postings...</p>
+                </div>
+              ) : (
+                <div>
+                  {jobs.length === 0 ? (
+                    <p style={{ textAlign: 'center', color: '#666', padding: '40px' }}>
+                      No job postings found
+                    </p>
+                  ) : (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        marginTop: '20px'
+                      }}>
+                        <thead>
+                          <tr style={{
+                            background: '#f3f4f6',
+                            borderBottom: '2px solid #7c3aed'
+                          }}>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#7c3aed' }}>ID</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#7c3aed' }}>Job Title</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#7c3aed' }}>Company Name</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#7c3aed' }}>University</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#7c3aed' }}>Status</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#7c3aed' }}>Close Date</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#7c3aed' }}>Type</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#7c3aed' }}>Salary</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {jobs.map((job) => (
+                            <tr key={job.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                              <td style={{ padding: '12px', verticalAlign: 'middle' }}>{job.id}</td>
+                              <td style={{ 
+                                padding: '12px',
+                                verticalAlign: 'middle',
+                                fontWeight: '500',
+                                color: '#333'
+                              }}>
+                                {job.title}
+                              </td>
+                              <td style={{ 
+                                padding: '12px', 
+                                verticalAlign: 'middle',
+                                color: '#059669',
+                                fontWeight: '500'
+                              }}>
+                                {job.companyName}
+                              </td>
+                              <td style={{ padding: '12px', verticalAlign: 'middle' }}>
+                                <span style={{
+                                  display: 'inline-block',
+                                  background: '#dbeafe',
+                                  color: '#1e40af',
+                                  padding: '4px 12px',
+                                  borderRadius: '12px',
+                                  fontSize: '0.85rem',
+                                  fontWeight: '500',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {job.universityName}
+                                </span>
+                              </td>
+                              <td style={{ padding: '12px', verticalAlign: 'middle' }}>
+                                <span style={{
+                                  display: 'inline-block',
+                                  background: job.status === 'active' ? '#d1fae5' : '#fee2e2',
+                                  color: job.status === 'active' ? '#065f46' : '#991b1b',
+                                  padding: '4px 12px',
+                                  borderRadius: '12px',
+                                  fontSize: '0.85rem',
+                                  fontWeight: '500',
+                                  textTransform: 'capitalize'
+                                }}>
+                                  {job.status === 'active' ? '✓ Active' : '✗ Inactive'}
+                                </span>
+                              </td>
+                              <td style={{ 
+                                padding: '12px', 
+                                verticalAlign: 'middle',
+                                color: job.status === 'inactive' ? '#991b1b' : '#333'
+                              }}>
+                                {new Date(job.enddate).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </td>
+                              <td style={{ padding: '12px', verticalAlign: 'middle' }}>
+                                <span style={{
+                                  display: 'inline-block',
+                                  background: '#f3f4f6',
+                                  color: '#374151',
+                                  padding: '4px 8px',
+                                  borderRadius: '8px',
+                                  fontSize: '0.85rem'
+                                }}>
+                                  {job.type}
+                                </span>
+                              </td>
+                              <td style={{ 
+                                padding: '12px', 
+                                verticalAlign: 'middle',
+                                color: '#059669',
+                                fontWeight: '500'
+                              }}>
+                                {job.salary}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
