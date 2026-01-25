@@ -142,8 +142,14 @@ def upload_universities():
 
 @universityDbUpdate_bp.route("/api/admin/universities/<int:university_id>", methods=['DELETE'])
 def delete_university(university_id):
-    """Delete a university by ID"""
+    """Delete a university by ID and all related records"""
     try:
+        # Import all models that have university relationships
+        from app.models import (
+            studentAuth, otpVerification, companyAuth, 
+            CompanyProfile, StudentProfile, JobDetails, JobApplication
+        )
+        
         university = universitytable.query.get(university_id)
         
         if not university:
@@ -152,12 +158,37 @@ def delete_university(university_id):
                 'message': 'University not found'
             }), 404
         
+        # Delete all related records in the correct order (respecting foreign key constraints)
+        # 1. Delete job applications first (depends on jobs, students, companies)
+        JobApplication.query.filter_by(universityid=university_id).delete()
+        
+        # 2. Delete job details (depends on companies)
+        JobDetails.query.filter_by(universityid=university_id).delete()
+        
+        # 3. Delete student profiles
+        StudentProfile.query.filter_by(universityid=university_id).delete()
+        
+        # 4. Delete company profiles
+        CompanyProfile.query.filter_by(universityid=university_id).delete()
+        
+        # 5. Delete student authentication records
+        studentAuth.query.filter_by(universityid=university_id).delete()
+        
+        # 6. Delete company authentication records
+        companyAuth.query.filter_by(universityid=university_id).delete()
+        
+        # 7. Delete OTP verification records
+        otpVerification.query.filter_by(universityid=university_id).delete()
+        
+        # 8. Finally, delete the university itself
         db.session.delete(university)
+        
+        # Commit all deletions
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': 'University deleted successfully'
+            'message': 'University and all related records deleted successfully'
         }), 200
         
     except Exception as e:
