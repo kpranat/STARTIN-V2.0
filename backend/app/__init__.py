@@ -22,10 +22,13 @@ def create_app():
         }
     }, automatic_options=True)
 
-    #sqlite config
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+    #postgrss config
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SECRET_KEY"] = "your_secret_key"
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "connect_args": {"sslmode": "require"}
+    }
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
     #initializing the extensions file 
     db.init_app(app)

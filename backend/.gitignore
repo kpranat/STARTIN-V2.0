@@ -5,3 +5,4 @@ uploads
 settingAdminPassword.py
 migrate_db.py
 sample_universities.csv
+adminpasswords.csv

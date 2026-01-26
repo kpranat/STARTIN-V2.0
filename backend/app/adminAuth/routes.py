@@ -102,7 +102,7 @@ def getJobs():
         
         # Format the results
         jobs_list = []
-        current_date = datetime.now()
+        current_date = datetime.now(timezone.utc)
         
         for job in jobs:
             # Determine if job is active or inactive based on end date

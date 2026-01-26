@@ -1,7 +1,7 @@
 from flask import request,jsonify
 from app.models import db,JobDetails,CompanyProfile,JobApplication,StudentProfile
 from . import JobDetails_bp
-from datetime import datetime
+from datetime import datetime, timezone
 
 #=================== set job details from the company side ===========================================
 @JobDetails_bp.route("/set/JobDetails",methods =['POST'])
@@ -23,7 +23,7 @@ def setJobDetails():
             except ValueError:
                 return jsonify({"success": False, "message": "Invalid enddate format"}), 400
             
-            current_date = datetime.now()
+            current_date = datetime.now(timezone.utc)
             if enddate > current_date:
                 JobData = JobDetails(
                     title=title, 
@@ -57,7 +57,7 @@ def getJobDetails():
     # Filter jobs by university ID
     jobs = JobDetails.query.filter_by(universityid=university_id).all()
     job_list = []
-    current_date = datetime.now()
+    current_date = datetime.now(timezone.utc)
     
     for jobs_details in jobs:
         companyquery = CompanyProfile.query.filter_by(id=jobs_details.companyid, universityid=university_id).first()
@@ -98,7 +98,7 @@ def getCompanyJobs():
     jobs = JobDetails.query.filter_by(companyid=company_id, universityid=university_id).all()
     
     jobs_data = []
-    current_date = datetime.now()
+    current_date = datetime.now(timezone.utc)
     for job in jobs:
         status = "Active" if job.enddate > current_date else "Closed"
         job_info = {
