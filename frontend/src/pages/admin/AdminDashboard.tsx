@@ -4,6 +4,8 @@ import { getAdminId } from '../../utils/auth';
 import axios from 'axios';
 import '../../App.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 interface University {
   id: number;
   universityName: string;
@@ -97,7 +99,7 @@ const AdminDashboard: React.FC = () => {
   const fetchUniversities = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/admin/universities');
+      const response = await axios.get(`${API_BASE_URL}/api/admin/universities`);
       if (response.data.success) {
         setUniversities(response.data.universities);
       }
@@ -128,7 +130,7 @@ const AdminDashboard: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/admin/universities/upload',
+        `${API_BASE_URL}/api/admin/universities/upload`,
         formData,
         {
           headers: {
@@ -162,7 +164,7 @@ const AdminDashboard: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await axios.delete(`http://localhost:5000/api/admin/universities/${id}`);
+      const response = await axios.delete(`${API_BASE_URL}/api/admin/universities/${id}`);
       if (response.data.success) {
         setUploadMessage({ type: 'success', text: 'University deleted successfully' });
         fetchUniversities();
@@ -192,7 +194,7 @@ const AdminDashboard: React.FC = () => {
   const fetchCompanies = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/admin/companies/verification');
+      const response = await axios.get(`${API_BASE_URL}/admin/companies/verification`);
       if (response.data.success) {
         setCompanies(response.data.companies);
       }
@@ -207,7 +209,7 @@ const AdminDashboard: React.FC = () => {
   const fetchRegisteredCompanies = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/admin/companies/registered');
+      const response = await axios.get(`${API_BASE_URL}/admin/companies/registered`);
       if (response.data.success) {
         setRegisteredCompanies(response.data.companies);
       }
@@ -246,7 +248,7 @@ const AdminDashboard: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        'http://localhost:5000/admin/companies/upload',
+        `${API_BASE_URL}/admin/companies/upload`,
         formData,
         {
           headers: {
@@ -284,7 +286,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleGeneratePasskey = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/admin/companies/generate-passkey');
+      const response = await axios.get(`${API_BASE_URL}/admin/companies/generate-passkey`);
       if (response.data.success) {
         setNewCompany({ ...newCompany, passkey: response.data.passkey });
       }
@@ -297,7 +299,7 @@ const AdminDashboard: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/admin/companies/add', newCompany);
+      const response = await axios.post(`${API_BASE_URL}/admin/companies/add`, newCompany);
       if (response.data.success) {
         setUploadMessage({ type: 'success', text: 'Company added successfully' });
         setShowAddCompanyForm(false);
@@ -320,7 +322,7 @@ const AdminDashboard: React.FC = () => {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/students');
+      const response = await axios.get(`${API_BASE_URL}/students`);
       if (response.data.success) {
         setStudents(response.data.students);
       }
@@ -335,7 +337,7 @@ const AdminDashboard: React.FC = () => {
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/admin/jobs');
+      const response = await axios.get(`${API_BASE_URL}/api/admin/jobs`);
       if (response.data.success) {
         setJobs(response.data.jobs);
       }
@@ -377,7 +379,7 @@ const AdminDashboard: React.FC = () => {
     setLoading(true);
     try {
       // Use plain passkey for deletion
-      const response = await axios.delete(`http://localhost:5000/admin/companies/${encodeURIComponent(company.passkey)}`);
+      const response = await axios.delete(`${API_BASE_URL}/admin/companies/${encodeURIComponent(company.passkey)}`);
       if (response.data.success) {
         setUploadMessage({ type: 'success', text: 'Company deleted successfully' });
         fetchCompanies();

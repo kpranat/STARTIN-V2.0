@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { getToken, removeToken, getUniversityId } from '../utils/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // Create axios instance with default config
 const apiClient = axios.create({

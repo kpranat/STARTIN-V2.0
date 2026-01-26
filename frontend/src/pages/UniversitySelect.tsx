@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 interface University {
   id: number;
   universityName: string;
@@ -23,7 +25,7 @@ const UniversitySelect = () => {
 
   const fetchUniversities = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/admin/universities');
+      const response = await axios.get(`${API_BASE_URL}/api/admin/universities`);
       if (response.data.success) {
         setUniversities(response.data.universities);
       }
@@ -58,7 +60,7 @@ const UniversitySelect = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/universities/verify-passkey', {
+      const response = await axios.post(`${API_BASE_URL}/api/universities/verify-passkey`, {
         passkey: passkey
       });
 

@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import CompanyNavbar from '../../components/CompanyNavbar';
 import { api } from '../../services/api';
 import { getCompanyId } from '../../utils/auth';
-import '../../App.css'; 
+import '../../App.css';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'; 
 
 interface Applicant {
   studentid: number;
@@ -61,7 +63,7 @@ const CompanyApplicants: React.FC = () => {
   const handleViewResume = (resumePath: string) => {
     if (resumePath) {
       // Construct the full URL to the resume
-      const resumeUrl = `http://127.0.0.1:5000/uploads/resumes/${resumePath}`;
+      const resumeUrl = `${API_BASE_URL}/uploads/resumes/${resumePath}`;
       window.open(resumeUrl, '_blank');
     }
   };
