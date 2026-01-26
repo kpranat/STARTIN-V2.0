@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import React, { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import StudentNavbar from '../../components/StudentNavbar';
 import { getStudentId } from '../../utils/auth';
@@ -96,17 +96,16 @@ const StudentProfile: React.FC = () => {
         formDataToSend.append('resume', resumeFile);
       }
 
-      let response;
       if (isSetupMode) {
         // Setup new profile
-        response = await api.student.setupProfile(formDataToSend);
+        await api.student.setupProfile(formDataToSend);
         setSuccess('Profile created successfully!');
         setTimeout(() => {
           navigate('/student/home');
         }, 1500);
       } else {
         // Update existing profile
-        response = await api.student.updateProfile(formDataToSend);
+        await api.student.updateProfile(formDataToSend);
         setSuccess('Profile updated successfully!');
         setIsEditing(false);
       }

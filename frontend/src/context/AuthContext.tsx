@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getToken, setToken, removeToken, isAuthenticated, getUserEmail, setUserData, getUserData } from '../utils/auth';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { setToken, removeToken, isAuthenticated, getUserEmail, setUserData, getUserData } from '../utils/auth';
 
 interface AuthContextType {
   isAuthenticated: boolean;

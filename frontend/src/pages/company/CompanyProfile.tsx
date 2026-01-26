@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import React, { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CompanyNavbar from '../../components/CompanyNavbar';
 import { getCompanyId } from '../../utils/auth';
@@ -104,17 +104,16 @@ const CompanyProfile: React.FC = () => {
         about: companyData.about
       };
 
-      let response;
       if (isSetupMode) {
         // Setup new profile
-        response = await api.company.setupProfile(payload);
+        await api.company.setupProfile(payload);
         setSuccess('Profile created successfully!');
         setTimeout(() => {
           navigate('/company/home');
         }, 1500);
       } else {
         // Update existing profile
-        response = await api.company.updateProfile(payload);
+        await api.company.updateProfile(payload);
         setSuccess('Profile updated successfully!');
         setIsEditing(false);
       }

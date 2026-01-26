@@ -66,14 +66,6 @@ const CompanyApplicants: React.FC = () => {
     }
   };
 
-  const handleViewProfile = (github: string, linkedin: string) => {
-    if (github) {
-      window.open(github, '_blank');
-    } else if (linkedin) {
-      window.open(linkedin, '_blank');
-    }
-  };
-
   const handleStatusChange = async (applicationId: number, newStatus: string) => {
     try {
       const response = await api.company.updateApplicationStatus({
