@@ -3,6 +3,7 @@ import { connectToBackend } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { setCompanyId, setUniversityId, setUniversityName } from '../utils/auth';
+import { sendCompanyOTPEmail } from '../services/emailService';
 import '../App.css';
 
 const CompanySignup = () => {
@@ -84,9 +85,17 @@ const CompanySignup = () => {
         universityId: parseInt(universityId)
       });
       
-      if (response.message) {
-        setSuccessMessage(response.message);
-        setStep('otp'); // Move to OTP verification step
+      // Backend returns OTP to frontend
+      if (response.success && response.otp) {
+        // Send OTP email from frontend using EmailJS
+        try {
+          await sendCompanyOTPEmail(response.email, response.otp);
+          setSuccessMessage('Verification email sent! Please check your inbox.');
+          setStep('otp'); // Move to OTP verification step
+        } catch (emailError) {
+          setError('Failed to send verification email. Please try again.');
+          console.error('Email sending error:', emailError);
+        }
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Signup failed. Please try again.';
@@ -164,11 +173,19 @@ const CompanySignup = () => {
         universityId: parseInt(universityId)
       });
 
-      if (response.message) {
-        setSuccessMessage('New OTP sent successfully! Please check your email.');
-        setRemainingTime(600); // Reset to 10 minutes
-        setCanResend(false);
-        setTimeout(() => setSuccessMessage(''), 3000);
+      // Backend returns new OTP to frontend
+      if (response.success && response.otp) {
+        // Send OTP email from frontend using EmailJS
+        try {
+          await sendCompanyOTPEmail(response.email, response.otp);
+          setSuccessMessage('New OTP sent successfully! Please check your email.');
+          setRemainingTime(600); // Reset to 10 minutes
+          setCanResend(false);
+          setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (emailError) {
+          setError('Failed to send verification email. Please try again.');
+          console.error('Email sending error:', emailError);
+        }
       }
     } catch (err: any) {
       if (err.response?.status === 429 && err.response?.data?.remainingSeconds) {

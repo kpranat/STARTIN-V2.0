@@ -2,8 +2,6 @@ from . import CompanySignup_bp
 from flask import request,jsonify,current_app
 from app.models import companyAuth,otpVerification,companyVerification,db
 import random
-from app.extensions import mail
-from flask_mail import Message
 from datetime import datetime, timezone, timedelta
 import jwt
 from werkzeug.security import generate_password_hash,check_password_hash
@@ -41,15 +39,14 @@ def StudentSignUp():
     otp_data.universityid = universityId
     db.session.add(otp_data)
     db.session.commit()
-    # Send email
-    try:
-        msg = Message("Your OTP Code for STARTIN is", recipients=[email])
-        msg.body = f"Your OTP is {otp}. Valid for 10 minutes."
-        mail.send(msg)
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-        # For testing, continue without email
-    return jsonify({"success": True, "message": "OTP sent successfully to your email"}), 200
+    
+    # Return OTP to frontend - frontend will send email via EmailJS
+    return jsonify({
+        "success": True, 
+        "message": "OTP generated successfully",
+        "otp": otp,
+        "email": email
+    }), 200
 
 #HANDLE OTP VERIFICATION ===========================================================================    
 @CompanySignup_bp.route("/auth/CompanyVerifyOTP",methods = ['POST'])
@@ -165,16 +162,13 @@ def ResendOTP():
         record.expires_at = current_time + timedelta(minutes=10)
         db.session.commit()
         
-        # Send email
-        try:
-            msg = Message("Your New OTP Code for STARTIN is", recipients=[email])
-            msg.body = f"Your new OTP is {new_otp}. Valid for 10 minutes."
-            mail.send(msg)
-        except Exception as e:
-            print(f"Failed to send email: {e}")
-            # For testing, continue without email
-        
-        return jsonify({"success": True, "message": "New OTP sent successfully"}), 200
+        # Return OTP to frontend - frontend will send email via EmailJS
+        return jsonify({
+            "success": True, 
+            "message": "New OTP generated successfully",
+            "otp": new_otp,
+            "email": email
+        }), 200
         
     except Exception as e:
         db.session.rollback()

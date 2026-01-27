@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { connectToBackend } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useAuth } from '../context/AuthContext'; 
-import { setStudentId, setUniversityId, setUniversityName } from '../utils/auth'; 
+import { setStudentId, setUniversityId, setUniversityName } from '../utils/auth';
+import { sendStudentOTPEmail } from '../services/emailService'; 
 
 const StudentSignup = () => {
   const navigate = useNavigate(); 
@@ -65,21 +66,28 @@ const StudentSignup = () => {
     }
 
     try {
-      // Send data to backend with university ID
+      // Send data to backend to generate OTP
       const response = await connectToBackend('student_signup', {
         ...formData,
         universityId: parseInt(universityId)
       });
 
-      // Backend returns { message: "OTP sent successfully" } on success
-      if (response.message) {
-        setSuccessMessage('Verification email sent! Please check your inbox.');
-        
-        // Show success message for 2 seconds before moving to OTP step
-        setTimeout(() => {
-          setSuccessMessage('');
-          setStep(2); // Move to OTP verification
-        }, 2000);
+      // Backend returns OTP to frontend
+      if (response.success && response.otp) {
+        // Send OTP email from frontend using EmailJS
+        try {
+          await sendStudentOTPEmail(response.email, response.otp, formData.name);
+          setSuccessMessage('Verification email sent! Please check your inbox.');
+          
+          // Show success message for 2 seconds before moving to OTP step
+          setTimeout(() => {
+            setSuccessMessage('');
+            setStep(2); // Move to OTP verification
+          }, 2000);
+        } catch (emailError) {
+          setError('Failed to send verification email. Please try again.');
+          console.error('Email sending error:', emailError);
+        }
       } else {
         setError(response.message || 'Signup failed');
       }
@@ -152,11 +160,19 @@ const StudentSignup = () => {
       setIsResending(false);
       return;
     }
-
-    try {
-      const response = await connectToBackend('resend_otp', {
-        email: formData.email,
-        universityId: parseInt(universityId)
+// Backend returns new OTP to frontend
+      if (response.success && response.otp) {
+        // Send OTP email from frontend using EmailJS
+        try {
+          await sendStudentOTPEmail(response.email, response.otp, formData.name);
+          setSuccessMessage('New OTP sent successfully! Please check your email.');
+          setRemainingTime(600); // Reset to 10 minutes
+          setCanResend(false);
+          setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (emailError) {
+          setError('Failed to send verification email. Please try again.');
+          console.error('Email sending error:', emailError);
+        }
       });
 
       if (response.message) {
