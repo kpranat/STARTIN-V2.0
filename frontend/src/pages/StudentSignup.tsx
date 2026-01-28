@@ -160,7 +160,14 @@ const StudentSignup = () => {
       setIsResending(false);
       return;
     }
-// Backend returns new OTP to frontend
+
+    try {
+      const response = await connectToBackend('resend_otp', {
+        email: formData.email,
+        universityId: parseInt(universityId)
+      });
+
+      // Backend returns new OTP to frontend
       if (response.success && response.otp) {
         // Send OTP email from frontend using EmailJS
         try {
@@ -173,9 +180,7 @@ const StudentSignup = () => {
           setError('Failed to send verification email. Please try again.');
           console.error('Email sending error:', emailError);
         }
-      });
-
-      if (response.message) {
+      } else if (response.message) {
         setSuccessMessage('New OTP sent successfully! Please check your email.');
         setRemainingTime(600); // Reset to 10 minutes
         setCanResend(false);
