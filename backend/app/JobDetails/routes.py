@@ -3,6 +3,13 @@ from app.models import db,JobDetails,CompanyProfile,JobApplication,StudentProfil
 from . import JobDetails_bp
 from datetime import datetime, timezone
 
+# Helper function to ensure datetime is timezone-aware
+def ensure_timezone_aware(dt):
+    """Convert naive datetime to timezone-aware (UTC) if needed"""
+    if dt and dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
 #=================== set job details from the company side ===========================================
 @JobDetails_bp.route("/set/JobDetails",methods =['POST'])
 def setJobDetails():
@@ -66,7 +73,8 @@ def getJobDetails():
         companyquery = CompanyProfile.query.filter_by(id=jobs_details.companyid, universityid=university_id).first()
         if companyquery:
             companyname = companyquery.name
-            if jobs_details.enddate > current_date:
+            job_enddate = ensure_timezone_aware(jobs_details.enddate)
+            if job_enddate > current_date:
                 job_data = {
                     "id": jobs_details.id,
                     "title": jobs_details.title,
@@ -103,7 +111,8 @@ def getCompanyJobs():
     jobs_data = []
     current_date = datetime.now(timezone.utc)
     for job in jobs:
-        status = "Active" if job.enddate > current_date else "Closed"
+        job_enddate = ensure_timezone_aware(job.enddate)
+        status = "Active" if job_enddate > current_date else "Closed"
         job_info = {
             "id": job.id,
             "title": job.title,

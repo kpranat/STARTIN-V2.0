@@ -5,6 +5,13 @@ from app.models import adminAuth, studentAuth, StudentProfile, universitytable, 
 from datetime import datetime, timezone, timedelta
 import jwt
 
+# Helper function to ensure datetime is timezone-aware
+def ensure_timezone_aware(dt):
+    """Convert naive datetime to timezone-aware (UTC) if needed"""
+    if dt and dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
 #login route=========================================================
 @adminAuth_bp.route("/auth/AdminLogin",methods = ['POST'])
 def AdminSignin():
@@ -106,7 +113,8 @@ def getJobs():
         
         for job in jobs:
             # Determine if job is active or inactive based on end date
-            status = "active" if job.enddate > current_date else "inactive"
+            job_enddate = ensure_timezone_aware(job.enddate)
+            status = "active" if job_enddate > current_date else "inactive"
             
             jobs_list.append({
                 "id": job.id,
