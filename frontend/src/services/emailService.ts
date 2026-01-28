@@ -30,12 +30,19 @@ export const sendOTPEmail = async (
   userName?: string
 ): Promise<void> => {
   try {
+    // Calculate expiry time (15 minutes from now)
+    const expiryTime = new Date(Date.now() + 15 * 60 * 1000);
+    const formattedTime = expiryTime.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    });
+    
     const templateParams = {
       to_email: toEmail,
       to_name: userName || 'User',
-      otp_code: otp,
-      message: `Your OTP code for STARTIN is: ${otp}`,
-      validity: '10 minutes',
+      passcode: otp,  // Changed from otp_code to passcode to match template
+      time: formattedTime,  // Changed from validity to time to match template
     };
 
     const response = await emailjs.send(
