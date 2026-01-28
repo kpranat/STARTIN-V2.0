@@ -15,7 +15,8 @@ def create_app():
             "origins": [
                 "http://localhost:5173", 
                 "http://127.0.0.1:5173",
-                "https://startin-v2-0.vercel.app"
+                "https://startin-v2-0.vercel.app",
+                "https://startin-v2-0-j1brcdzqs-kpranats-projects.vercel.app/"
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
