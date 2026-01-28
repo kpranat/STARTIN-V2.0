@@ -44,7 +44,7 @@ const CompanyApplicants: React.FC = () => {
         return;
       }
       
-      const response = await api.company.getApplicants({ compnayid: companyId });
+      const response = await api.company.getApplicants({ companyid: companyId });
       
       if (response.data.success) {
         // Backend now returns an array of all applicants

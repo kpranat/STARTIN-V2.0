@@ -182,7 +182,7 @@ def getStudentAppliedJobs():
 @JobDetails_bp.route("/set/jobApplicantData/companyportal",methods =['POST','GET'])
 def setJobApplicantStatus():
     data = request.get_json()
-    companyid = data.get("compnayid")
+    companyid = data.get("companyid")
     
     if not companyid:
         return jsonify({"success": False, "message": "Company ID is required"}), 400

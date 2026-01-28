@@ -161,7 +161,7 @@ export const api = {
       ...data,
       universityId: getUniversityId()
     }),
-    getApplicants: (data: { compnayid: string | number }) => 
+    getApplicants: (data: { companyid: string | number }) => 
       apiClient.post('/set/jobApplicantData/companyportal', data),
     updateApplicationStatus: (data: { application_id: number; status: string }) =>
       apiClient.post('/update/applicationStatus', data),
