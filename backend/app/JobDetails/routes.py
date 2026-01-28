@@ -20,6 +20,9 @@ def setJobDetails():
         if title and type and salary and description and requirements and enddate_str:
             try:
                 enddate = datetime.fromisoformat(enddate_str.replace('Z', '+00:00'))
+                # Ensure enddate is timezone-aware
+                if enddate.tzinfo is None:
+                    enddate = enddate.replace(tzinfo=timezone.utc)
             except ValueError:
                 return jsonify({"success": False, "message": "Invalid enddate format"}), 400
             
