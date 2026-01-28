@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CompanyNavbar from '../../components/CompanyNavbar';
 import { api } from '../../services/api';
 import { getCompanyId } from '../../utils/auth';
@@ -19,6 +20,7 @@ const CompanyJobs: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -103,7 +105,7 @@ const CompanyJobs: React.FC = () => {
                         backgroundColor: '#0f766e',
                         flex: 1
                       }}
-                      onClick={() => window.location.href = `/company/applicants?jobId=${job.id}`}
+                      onClick={() => navigate('/company/applicants', { state: { jobId: job.id } })}
                     >
                       View Applicants
                     </button>
@@ -120,7 +122,7 @@ const CompanyJobs: React.FC = () => {
                     backgroundColor: '#0f766e',
                     padding: '10px 20px'
                   }}
-                  onClick={() => window.location.href = '/company/post-job'}
+                  onClick={() => navigate('/company/post-job')}
                 >
                   Post Your First Job
                 </button>
