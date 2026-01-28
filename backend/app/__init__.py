@@ -27,7 +27,7 @@ def create_app():
     #load config file 
     app.config.from_object(Config)
 
-    # Enable CORS for all routes
+    """ Enable CORS for all routes
     CORS(app, resources={
         r"/*": {
             "origins": [
@@ -39,7 +39,7 @@ def create_app():
             "allow_headers": ["Content-Type", "Authorization"],
             "supports_credentials": True
         }
-    }, automatic_options=True)
+    }, automatic_options=True) """
 
     #postgrss config
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
