@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { connectToBackend } from '../services/api';
 import { sendPasswordResetEmail } from '../services/emailService';
 import '../App.css';
 
 const CompanyForgotPassword: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState<'email' | 'token' | 'password'>('email');
   const [email, setEmail] = useState('');
   const [token, setToken] = useState('');
@@ -14,6 +15,42 @@ const CompanyForgotPassword: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Check for token in URL on component mount
+  useEffect(() => {
+    const urlToken = searchParams.get('token');
+    if (urlToken) {
+      setToken(urlToken);
+      // Auto-verify the token
+      verifyTokenFromUrl(urlToken);
+    }
+  }, [searchParams]);
+
+  const verifyTokenFromUrl = async (urlToken: string) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await connectToBackend('company_verify_reset_token', {
+        token: urlToken
+      });
+
+      if (response.success) {
+        setEmail(response.email);
+        setSuccess('Token verified! Please enter your new password.');
+        setStep('password');
+      } else {
+        setError(response.message || 'Invalid or expired token');
+        setStep('email');
+      }
+    } catch (err: any) {
+      console.error('Token verification error:', err);
+      setError(err.response?.data?.message || 'Invalid or expired token. Please request a new one.');
+      setStep('email');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();

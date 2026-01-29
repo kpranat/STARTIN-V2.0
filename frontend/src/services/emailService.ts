@@ -86,7 +86,7 @@ export const sendCompanyOTPEmail = async (
 };
 
 /**
- * Send password reset email with token
+ * Send password reset email with clickable link
  * @param toEmail - Recipient email address
  * @param resetToken - Password reset token
  * @param userType - 'student' or 'company'
@@ -100,21 +100,23 @@ export const sendPasswordResetEmail = async (
   userName?: string
 ): Promise<void> => {
   try {
-    // You'll need to create a password reset template in EmailJS
-    // For now, sending the token directly
+    // Build the reset link with token as URL parameter
+    const baseUrl = window.location.origin;
+    const resetPath = userType === 'student' ? '/student/forgot-password' : '/company/forgot-password';
+    const resetLink = `${baseUrl}${resetPath}?token=${encodeURIComponent(resetToken)}`;
+
     const templateParams = {
       to_email: toEmail,
       to_name: userName || 'User',
-      reset_token: resetToken,
-      user_type: userType === 'student' ? 'Student' : 'Company',
-      expiry_time: '1 hour',
+      link: resetLink, // Changed from reset_token to link to match template
     };
 
-    // Note: You'll need to create a separate template for password reset
-    // or modify your existing template
+    // Using separate template ID for password reset
+    const passwordResetTemplateId = import.meta.env.VITE_EMAILJS_PASSWORD_RESET_TEMPLATE_ID || EMAILJS_CONFIG.TEMPLATE_ID;
+    
     const response = await emailjs.send(
       EMAILJS_CONFIG.SERVICE_ID,
-      EMAILJS_CONFIG.TEMPLATE_ID, // You might want a separate template ID for password reset
+      passwordResetTemplateId,
       templateParams,
       EMAILJS_CONFIG.PUBLIC_KEY
     );
