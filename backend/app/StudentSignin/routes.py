@@ -108,8 +108,14 @@ def verify_reset_token():
     if not reset_token:
         return jsonify({"success": False, "message": "Invalid or expired token"}), 400
     
-    # Check if token has expired
-    if datetime.now(timezone.utc) > reset_token.expires_at:
+    # Check if token has expired - handle both timezone-aware and naive datetimes
+    current_time = datetime.now(timezone.utc)
+    expires_at = reset_token.expires_at
+    # If expires_at is timezone-naive, make it aware
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    
+    if current_time > expires_at:
         return jsonify({"success": False, "message": "Token has expired"}), 400
     
     return jsonify({
@@ -141,8 +147,14 @@ def reset_password():
     if not reset_token:
         return jsonify({"success": False, "message": "Invalid or expired token"}), 400
     
-    # Check if token has expired
-    if datetime.now(timezone.utc) > reset_token.expires_at:
+    # Check if token has expired - handle both timezone-aware and naive datetimes
+    current_time = datetime.now(timezone.utc)
+    expires_at = reset_token.expires_at
+    # If expires_at is timezone-naive, make it aware
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    
+    if current_time > expires_at:
         return jsonify({"success": False, "message": "Token has expired"}), 400
     
     # Find the user
