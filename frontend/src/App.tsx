@@ -18,6 +18,8 @@ import StudentSignup from './pages/StudentSignup';
 import CompanyLogin from './pages/CompanyLogin';
 import CompanySignup from './pages/CompanySignup';
 import AdminLogin from './pages/admin/AdminLogin';
+import StudentForgotPassword from './pages/StudentForgotPassword';
+import CompanyForgotPassword from './pages/CompanyForgotPassword';
 
 // Admin Dashboard Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -51,8 +53,10 @@ function App() {
         {/* Step 3: Auth Flows */}
         <Route path="/student/login" element={<StudentLogin />} />
         <Route path="/student/signup" element={<StudentSignup />} />
+        <Route path="/student/forgot-password" element={<StudentForgotPassword />} />
         <Route path="/company/login" element={<CompanyLogin />} />
         <Route path="/company/signup" element={<CompanySignup />} />
+        <Route path="/company/forgot-password" element={<CompanyForgotPassword />} />
         <Route path="/admin/login" element={<AdminLogin />} />
 
         {/* Step 4: Student Dashboard */}

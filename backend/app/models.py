@@ -1,5 +1,6 @@
 from .extensions import db
 from datetime import datetime, timedelta, timezone
+import secrets
 
 # ============================== company verification =====================================
 class companyVerification(db.Model):
@@ -43,6 +44,26 @@ class companyAuth(db.Model):
     email =db.Column(db.String(255),nullable = False)
     password = db.Column(db.String(255),nullable = False)
     universityid = db.Column(db.Integer,db.ForeignKey("universitytable.id"),nullable = False)
+#=============================== Password Reset Token Table ===========================    
+class passwordResetToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), nullable=False)
+    token = db.Column(db.String(100), nullable=False, unique=True)
+    user_type = db.Column(db.String(20), nullable=False)  # 'student' or 'company'
+    expires_at = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False, nullable=False)
+    universityid = db.Column(db.Integer, db.ForeignKey("universitytable.id"), nullable=False)
+    
+    def __init__(self, email, user_type, universityid):
+        self.email = email
+        self.user_type = user_type
+        self.universityid = universityid
+        self.token = secrets.token_urlsafe(32)
+        current_time = datetime.now(timezone.utc)
+        self.created_at = current_time
+        self.expires_at = current_time + timedelta(hours=1)  # Valid for 1 hour
+        self.used = False
 #======================= Company Profile ==============================================
 class CompanyProfile (db.Model):
     id = db.Column(db.Integer,primary_key = True)

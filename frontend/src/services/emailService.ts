@@ -84,3 +84,44 @@ export const sendCompanyOTPEmail = async (
 ): Promise<void> => {
   return sendOTPEmail(email, otp, 'Company Representative');
 };
+
+/**
+ * Send password reset email with token
+ * @param toEmail - Recipient email address
+ * @param resetToken - Password reset token
+ * @param userType - 'student' or 'company'
+ * @param userName - Optional user name for personalization
+ * @returns Promise that resolves when email is sent
+ */
+export const sendPasswordResetEmail = async (
+  toEmail: string,
+  resetToken: string,
+  userType: 'student' | 'company',
+  userName?: string
+): Promise<void> => {
+  try {
+    // You'll need to create a password reset template in EmailJS
+    // For now, sending the token directly
+    const templateParams = {
+      to_email: toEmail,
+      to_name: userName || 'User',
+      reset_token: resetToken,
+      user_type: userType === 'student' ? 'Student' : 'Company',
+      expiry_time: '1 hour',
+    };
+
+    // Note: You'll need to create a separate template for password reset
+    // or modify your existing template
+    const response = await emailjs.send(
+      EMAILJS_CONFIG.SERVICE_ID,
+      EMAILJS_CONFIG.TEMPLATE_ID, // You might want a separate template ID for password reset
+      templateParams,
+      EMAILJS_CONFIG.PUBLIC_KEY
+    );
+
+    console.log('Password reset email sent successfully:', response);
+  } catch (error) {
+    console.error('Failed to send password reset email:', error);
+    throw new Error('Failed to send password reset email. Please try again.');
+  }
+};

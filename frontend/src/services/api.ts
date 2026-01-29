@@ -2,7 +2,8 @@
 import axios from 'axios';
 import { getToken, removeToken, getUniversityId } from '../utils/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Remove trailing slash from API_BASE_URL to prevent double slashes
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -87,6 +88,32 @@ export const connectToBackend = async (actionType: string, data: any) => {
         
       case 'admin_login':
         response = await axios.post(`${API_BASE_URL}/auth/AdminLogin`, data);
+        return response.data;
+        
+      // Student password reset
+      case 'student_request_reset':
+        response = await axios.post(`${API_BASE_URL}/auth/StudentRequestPasswordReset`, data);
+        return response.data;
+        
+      case 'student_verify_reset_token':
+        response = await axios.post(`${API_BASE_URL}/auth/StudentVerifyResetToken`, data);
+        return response.data;
+        
+      case 'student_reset_password':
+        response = await axios.post(`${API_BASE_URL}/auth/StudentResetPassword`, data);
+        return response.data;
+        
+      // Company password reset
+      case 'company_request_reset':
+        response = await axios.post(`${API_BASE_URL}/auth/CompanyRequestPasswordReset`, data);
+        return response.data;
+        
+      case 'company_verify_reset_token':
+        response = await axios.post(`${API_BASE_URL}/auth/CompanyVerifyResetToken`, data);
+        return response.data;
+        
+      case 'company_reset_password':
+        response = await axios.post(`${API_BASE_URL}/auth/CompanyResetPassword`, data);
         return response.data;
         
       default:
