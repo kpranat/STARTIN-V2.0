@@ -7,7 +7,7 @@ import '../App.css';
 const CompanyForgotPassword: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [step, setStep] = useState<'email' | 'token' | 'password'>('email');
+  const [step, setStep] = useState<'email' | 'token' | 'password' | 'verifying' | 'linkSent'>('email');
   const [email, setEmail] = useState('');
   const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -21,6 +21,7 @@ const CompanyForgotPassword: React.FC = () => {
     const urlToken = searchParams.get('token');
     if (urlToken) {
       setToken(urlToken);
+      setStep('verifying');
       // Auto-verify the token
       verifyTokenFromUrl(urlToken);
     }
@@ -76,8 +77,8 @@ const CompanyForgotPassword: React.FC = () => {
         // Send email with token
         try {
           await sendPasswordResetEmail(email, response.token, 'company');
-          setSuccess('Password reset instructions have been sent to your email. Please check your inbox.');
-          setStep('token');
+          setSuccess('Password reset link has been sent to your email. Please check your inbox and click the link to reset your password.');
+          setStep('linkSent');
         } catch (emailError) {
           // If email fails, still allow manual token entry
           setSuccess('Reset token generated. Please enter the token sent to your email.');
@@ -143,7 +144,7 @@ const CompanyForgotPassword: React.FC = () => {
       });
 
       if (response.success) {
-        setSuccess('Password reset successful! Redirecting to login...');
+        setSuccess('Password reset successful! Redirecting to login... You may close this window.');
         setTimeout(() => {
           navigate('/company/login');
         }, 2000);
@@ -182,12 +183,14 @@ const CompanyForgotPassword: React.FC = () => {
         <h2 style={{ marginBottom: '10px', color: '#0f766e' }}>
           {step === 'email' && 'Forgot Password'}
           {step === 'token' && 'Verify Reset Token'}
+          {step === 'verifying' && 'Verifying Token...'}
+          {step === 'linkSent' && 'Check Your Email'}
           {step === 'password' && 'Set New Password'}
         </h2>
         
         {step === 'email' && (
           <p style={{ marginBottom: '20px', fontSize: '0.9rem', color: '#666' }}>
-            Enter your company email address and we'll send you a password reset token.
+            Enter your company email address and we'll send you a password reset link. Click the link in your email to reset your password.
           </p>
         )}
 
@@ -214,6 +217,46 @@ const CompanyForgotPassword: React.FC = () => {
             fontSize: '0.9rem'
           }}>
             {success}
+          </div>
+        )}
+
+        {/* Link Sent State */}
+        {step === 'linkSent' && (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <p style={{ marginBottom: '20px', fontSize: '1rem', color: '#666' }}>
+              A password reset link has been sent to your email.
+            </p>
+            <p style={{ marginBottom: '20px', fontSize: '0.9rem', color: '#666' }}>
+              Please check your inbox and click the link to reset your password.
+            </p>
+            <p style={{ fontSize: '0.85rem', color: '#999', fontStyle: 'italic' }}>
+              You may close this window.
+            </p>
+          </div>
+        )}
+
+        {/* Verifying Token State */}
+        {step === 'verifying' && (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <div style={{ 
+              display: 'inline-block',
+              width: '40px',
+              height: '40px',
+              border: '4px solid #f3f3f3',
+              borderTop: '4px solid #0f766e',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              marginBottom: '20px'
+            }}></div>
+            <p style={{ fontSize: '1rem', color: '#666' }}>
+              Verifying token...
+            </p>
+            <style>{`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}</style>
           </div>
         )}
 
