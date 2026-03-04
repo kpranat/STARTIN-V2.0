@@ -16,14 +16,14 @@ def create_app():
                 "http://localhost:5173", 
                 "http://127.0.0.1:5173",
                 "https://startin-v2-0.vercel.app",
-                # Allow all Vercel preview deployments
-                r"https://.*-kpranats-projects\.vercel\.app"
+                # Allow all Vercel preview deployments with regex pattern
+                r"https://.*\.vercel\.app"
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
             "supports_credentials": True
         }
-    }, automatic_options=True)
+    }, automatic_options=True, supports_credentials=True)
 
     #load config file 
     app.config.from_object(Config)
