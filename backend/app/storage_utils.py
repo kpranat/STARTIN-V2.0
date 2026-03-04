@@ -1,17 +1,30 @@
 import os
-from supabase import create_client, Client
+from storage3 import create_client as create_storage_client
 from werkzeug.utils import secure_filename
-from flask import current_app
 
-def get_supabase_client() -> Client:
-    """Initialize and return Supabase client"""
+def get_storage_client(use_service_key=True):
+    """Initialize and return Supabase Storage client"""
     url = os.getenv("SUPABASE_URL")
-    key = os.getenv("SUPABASE_KEY")
+    
+    # Use service key for uploads/deletes to bypass RLS
+    if use_service_key:
+        key = os.getenv("SUPABASE_SERVICE_KEY")
+        if not key:
+            # Fallback to regular key if service key not available
+            key = os.getenv("SUPABASE_KEY")
+    else:
+        key = os.getenv("SUPABASE_KEY")
     
     if not url or not key:
         raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in environment variables")
     
-    return create_client(url, key)
+    # Create storage client directly
+    storage_url = f"{url}/storage/v1"
+    headers = {
+        "apiKey": key,
+        "Authorization": f"Bearer {key}"
+    }
+    return create_storage_client(storage_url, headers, is_async=False)
 
 def upload_file_to_supabase(file, folder: str, filename_prefix: str = ""):
     """
@@ -26,7 +39,8 @@ def upload_file_to_supabase(file, folder: str, filename_prefix: str = ""):
         tuple: (success: bool, file_path: str or error_message: str)
     """
     try:
-        supabase = get_supabase_client()
+        # Use service key to bypass RLS for uploads
+        storage = get_storage_client(use_service_key=True)
         bucket = os.getenv("SUPABASE_BUCKET", "uploads")
         
         # Secure the filename
@@ -44,11 +58,16 @@ def upload_file_to_supabase(file, folder: str, filename_prefix: str = ""):
         # Read file content
         file_content = file.read()
         
-        # Upload to Supabase (upsert=True will overwrite if exists)
-        response = supabase.storage.from_(bucket).upload(
+        # Try to remove existing file first (if it exists)
+        try:
+            storage.from_(bucket).remove([file_path])
+        except:
+            pass  # File might not exist, which is fine
+        
+        # Upload to Supabase Storage
+        response = storage.from_(bucket).upload(
             file_path,
-            file_content,
-            file_options={"upsert": "true"}
+            file_content
         )
         
         # Return the path that was uploaded
@@ -68,11 +87,12 @@ def delete_file_from_supabase(file_path: str):
         tuple: (success: bool, message: str)
     """
     try:
-        supabase = get_supabase_client()
+        # Use service key to bypass RLS for deletes
+        storage = get_storage_client(use_service_key=True)
         bucket = os.getenv("SUPABASE_BUCKET", "uploads")
         
         # Delete file
-        supabase.storage.from_(bucket).remove([file_path])
+        storage.from_(bucket).remove([file_path])
         
         return True, "File deleted successfully"
         
@@ -90,11 +110,12 @@ def get_file_url_from_supabase(file_path: str):
         str: Public URL of the file
     """
     try:
-        supabase = get_supabase_client()
+        # Can use regular key for reading public URLs
+        storage = get_storage_client(use_service_key=False)
         bucket = os.getenv("SUPABASE_BUCKET", "uploads")
         
         # Get public URL
-        url = supabase.storage.from_(bucket).get_public_url(file_path)
+        url = storage.from_(bucket).get_public_url(file_path)
         
         return url
         

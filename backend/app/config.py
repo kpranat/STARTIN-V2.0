@@ -19,4 +19,5 @@ class Config:
     #setup supabase
     SUPABASE_URL = os.getenv("SUPABASE_URL")
     SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+    SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
     SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "uploads")
