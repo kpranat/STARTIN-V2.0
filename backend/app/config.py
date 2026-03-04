@@ -15,3 +15,8 @@ class Config:
     #setup jwt token
     JWT_SECRET = os.getenv("JWT_SECRET", "your_jwt_secret")
     JWT_EXP_MINUTES = int(os.getenv("JWT_EXP_MINUTES", 10))
+    
+    #setup supabase
+    SUPABASE_URL = os.getenv("SUPABASE_URL")
+    SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+    SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "uploads")

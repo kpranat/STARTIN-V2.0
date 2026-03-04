@@ -85,11 +85,18 @@ def create_app():
     from app.CompanyManagement import CompanyManagement_bp
     app.register_blueprint(CompanyManagement_bp)
 
-    # Route to serve uploaded resume files
-    @app.route('/uploads/resumes/<filename>')
+    # Route to serve uploaded resume files from Supabase
+    @app.route('/uploads/resumes/<path:filename>')
     def serve_resume(filename):
-        upload_folder = os.path.join(os.getcwd(), 'uploads', 'resumes')
-        return send_from_directory(upload_folder, filename)
+        from app.storage_utils import get_file_url_from_supabase
+        from flask import redirect
+        
+        # Get the public URL from Supabase
+        file_url = get_file_url_from_supabase(f"resumes/{filename}")
+        if file_url:
+            return redirect(file_url)
+        else:
+            return jsonify({"error": "File not found"}), 404
 
     # Import models before creating tables
     from . import models

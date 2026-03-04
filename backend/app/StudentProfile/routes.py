@@ -2,9 +2,9 @@ from . import StudentProfile_bp
 from flask import request, jsonify
 from app.models import StudentProfile, db, studentAuth
 from werkzeug.utils import secure_filename
+from app.storage_utils import upload_file_to_supabase, delete_file_from_supabase
 import os
 
-UPLOAD_FOLDER = 'uploads/resumes'
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
 
 def allowed_file(filename):
@@ -74,13 +74,12 @@ def StudentProfileSetup():
     if 'resume' in request.files:
         file = request.files['resume']
         if file and file.filename and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            # Add student_id to filename to make it unique
-            resume_filename = f"{student_id}_{filename}"
-            
-            # Create upload directory if it doesn't exist
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-            file.save(os.path.join(UPLOAD_FOLDER, resume_filename))
+            # Upload to Supabase
+            success, result = upload_file_to_supabase(file, 'resumes', student_id)
+            if success:
+                resume_filename = result  # This is the full path in Supabase
+            else:
+                return jsonify({"success": False, "message": f"Resume upload failed: {result}"}), 500
     
     StudentProfileData = StudentProfile(
         id=student_id,
@@ -135,18 +134,16 @@ def StudentProfileUpdate():
     if 'resume' in request.files:
         file = request.files['resume']
         if file and file.filename and allowed_file(file.filename):
-            # Delete old resume if exists
+            # Delete old resume from Supabase if exists
             if student_data.resume:
-                old_file_path = os.path.join(UPLOAD_FOLDER, student_data.resume)
-                if os.path.exists(old_file_path):
-                    os.remove(old_file_path)
+                delete_file_from_supabase(student_data.resume)
             
-            filename = secure_filename(file.filename)
-            resume_filename = f"{student_id}_{filename}"
-            
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-            file.save(os.path.join(UPLOAD_FOLDER, resume_filename))
-            student_data.resume = resume_filename
+            # Upload new resume to Supabase
+            success, result = upload_file_to_supabase(file, 'resumes', student_id)
+            if success:
+                student_data.resume = result  # This is the full path in Supabase
+            else:
+                return jsonify({"success": False, "message": f"Resume upload failed: {result}"}), 500
     
     db.session.commit()
     return jsonify({"success": True, "message": "Profile Updated Successfully"}), 200
