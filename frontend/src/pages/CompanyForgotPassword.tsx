@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, ShieldCheck, Key, Lock, ArrowLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { connectToBackend } from '../services/api';
 import { sendPasswordResetEmail } from '../services/emailService';
+import ColorBends from '../components/ui/ColorBends';
 import '../App.css';
 
 const CompanyForgotPassword: React.FC = () => {
@@ -16,13 +19,11 @@ const CompanyForgotPassword: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Check for token in URL on component mount
   useEffect(() => {
     const urlToken = searchParams.get('token');
     if (urlToken) {
       setToken(urlToken);
       setStep('verifying');
-      // Auto-verify the token
       verifyTokenFromUrl(urlToken);
     }
   }, [searchParams]);
@@ -30,23 +31,18 @@ const CompanyForgotPassword: React.FC = () => {
   const verifyTokenFromUrl = async (urlToken: string) => {
     setLoading(true);
     setError('');
-    
     try {
-      const response = await connectToBackend('company_verify_reset_token', {
-        token: urlToken
-      });
-
+      const response = await connectToBackend('company_verify_reset_token', { token: urlToken });
       if (response.success) {
         setEmail(response.email);
-        setSuccess('Token verified! Please enter your new password.');
+        setSuccess('Token verified! Choose your new password.');
         setStep('password');
       } else {
         setError(response.message || 'Invalid or expired token');
         setStep('email');
       }
     } catch (err: any) {
-      console.error('Token verification error:', err);
-      setError(err.response?.data?.message || 'Invalid or expired token. Please request a new one.');
+      setError(err.response?.data?.message || 'Invalid token');
       setStep('email');
     } finally {
       setLoading(false);
@@ -58,38 +54,28 @@ const CompanyForgotPassword: React.FC = () => {
     setError('');
     setSuccess('');
     setLoading(true);
-
     try {
       const selectedUniversityId = localStorage.getItem('selected_university_id');
-      
       if (!selectedUniversityId) {
-        setError('University not selected. Please go back to landing page.');
+        setError('University missing. Please return home.');
         setLoading(false);
         return;
       }
-
-      const response = await connectToBackend('company_request_reset', {
-        email,
-        universityId: selectedUniversityId
-      });
-
+      const response = await connectToBackend('company_request_reset', { email, universityId: selectedUniversityId });
       if (response.success) {
-        // Send email with token
         try {
           await sendPasswordResetEmail(email, response.token, 'company');
-          setSuccess('Password reset link has been sent to your email. Please check your inbox and click the link to reset your password.');
+          setSuccess('Reset link dispatched to your inbox.');
           setStep('linkSent');
         } catch (emailError) {
-          // If email fails, still allow manual token entry
-          setSuccess('Reset token generated. Please enter the token sent to your email.');
+          setSuccess('Token generated. Please check your email.');
           setStep('token');
         }
       } else {
-        setError(response.message || 'Failed to request password reset');
+        setError(response.message || 'Reset request failed');
       }
     } catch (err: any) {
-      console.error('Password reset request error:', err);
-      setError(err.response?.data?.message || 'Failed to request password reset');
+      setError(err.response?.data?.message || 'Request failed');
     } finally {
       setLoading(false);
     }
@@ -100,21 +86,16 @@ const CompanyForgotPassword: React.FC = () => {
     setError('');
     setSuccess('');
     setLoading(true);
-
     try {
-      const response = await connectToBackend('company_verify_reset_token', {
-        token
-      });
-
+      const response = await connectToBackend('company_verify_reset_token', { token });
       if (response.success) {
-        setSuccess('Token verified! Please enter your new password.');
+        setSuccess('Token verified!');
         setStep('password');
       } else {
-        setError(response.message || 'Invalid or expired token');
+        setError(response.message || 'Invalid token');
       }
     } catch (err: any) {
-      console.error('Token verification error:', err);
-      setError(err.response?.data?.message || 'Invalid or expired token');
+      setError(err.response?.data?.message || 'Invalid token');
     } finally {
       setLoading(false);
     }
@@ -123,255 +104,176 @@ const CompanyForgotPassword: React.FC = () => {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
-
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
     setLoading(true);
-
     try {
-      const response = await connectToBackend('company_reset_password', {
-        token,
-        newPassword
-      });
-
+      const response = await connectToBackend('company_reset_password', { token, newPassword });
       if (response.success) {
-        setSuccess('Password reset successful! Redirecting to login... You may close this window.');
-        setTimeout(() => {
-          navigate('/company/login');
-        }, 2000);
+        setSuccess('Password updated successfully!');
+        setTimeout(() => navigate('/company/login'), 2000);
       } else {
-        setError(response.message || 'Failed to reset password');
-        setLoading(false);
+        setError(response.message || 'Reset failed');
       }
     } catch (err: any) {
-      console.error('Password reset error:', err);
-      setError(err.response?.data?.message || 'Failed to reset password');
+      setError(err.response?.data?.message || 'Reset failed');
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="landing-container">
-      <div style={{ textAlign: 'left', marginBottom: '20px' }}>
-        <button 
-          onClick={() => navigate('/company/login')}
-          style={{ 
-            background: 'none', 
-            border: 'none', 
-            color: '#555', 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center',
-            gap: '5px',
-            fontSize: '0.9rem' 
+    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
+      <ColorBends speed={0.1} colors={['#0891b2', '#06b6d4', '#0d9488', '#22d3ee']} />
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(5, 5, 8, 0.75)', backdropFilter: 'blur(10px)' }} />
+
+      <div className="landing-container" style={{ position: 'relative', zIndex: 10, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          style={{ textAlign: 'left', marginBottom: '20px', width: '100%', maxWidth: '440px' }}
+        >
+          <button
+            onClick={() => navigate('/company/login')}
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '0.9rem',
+              padding: '0.6rem 1.2rem',
+              borderRadius: 'var(--radius-full)',
+            }}
+          >
+            <ArrowLeft size={16} /> Back to Login
+          </button>
+        </motion.div>
+
+        <motion.div
+          layout
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="form-container card"
+          style={{
+            padding: '3rem',
+            maxWidth: '440px',
+            width: '100%',
+            background: 'rgba(15, 20, 20, 0.4)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(30px)',
           }}
         >
-          ← Back to Login
-        </button>
-      </div>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              background: 'var(--gradient-company)',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.5rem',
+              boxShadow: '0 8px 16px rgba(8, 145, 178, 0.3)',
+            }}>
+              {step === 'email' ? <Mail size={32} color="white" /> :
+                step === 'password' ? <Lock size={32} color="white" /> :
+                  <Key size={32} color="white" />}
+            </div>
+            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'white', marginBottom: '0.5rem' }}>
+              {step === 'email' && 'Forgot Password'}
+              {step === 'token' && 'Identity Verified'}
+              {step === 'verifying' && 'Verifying...'}
+              {step === 'linkSent' && 'Instructions Sent'}
+              {step === 'password' && 'Secure Password'}
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+              {step === 'email' && 'Recover access to your partner portal'}
+              {step === 'token' && 'Enter the secure token from your email'}
+              {step === 'linkSent' && 'We have dispatched instructions to your email'}
+              {step === 'password' && 'Choose a new complex password'}
+            </p>
+          </div>
 
-      <div className="form-container card">
-        <h2 style={{ marginBottom: '10px', color: '#0f766e' }}>
-          {step === 'email' && 'Forgot Password'}
-          {step === 'token' && 'Verify Reset Token'}
-          {step === 'verifying' && 'Verifying Token...'}
-          {step === 'linkSent' && 'Check Your Email'}
-          {step === 'password' && 'Set New Password'}
-        </h2>
-        
-        {step === 'email' && (
-          <p style={{ marginBottom: '20px', fontSize: '0.9rem', color: '#666' }}>
-            Enter your company email address and we'll send you a password reset link. Click the link in your email to reset your password.
+          {error && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#f87171', padding: '0.8rem', borderRadius: '10px', marginBottom: '1.5rem', fontSize: '0.9rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+              {error}
+            </motion.div>
+          )}
+
+          {success && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#4ade80', padding: '0.8rem', borderRadius: '10px', marginBottom: '1.5rem', fontSize: '0.9rem', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+              {success}
+            </motion.div>
+          )}
+
+          <AnimatePresence mode="wait">
+            {step === 'email' && (
+              <motion.form key="email-step" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} onSubmit={handleRequestReset} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div className="input-wrapper">
+                  <i className="input-icon"><Mail size={18} /></i>
+                  <input type="email" placeholder="Corporate Email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading} style={{ paddingRight: '1rem' }} />
+                </div>
+                <button type="submit" className="btn btn-company" disabled={loading} style={{ height: '3.2rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                  {loading ? 'Processing...' : <>Send Instructions <ChevronRight size={18} /></>}
+                </button>
+              </motion.form>
+            )}
+
+            {step === 'linkSent' && (
+              <motion.div key="sent-step" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center', padding: '1rem 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                  <CheckCircle2 size={48} color="#22d3ee" />
+                </div>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+                  A reset link is on its way to <strong>{email}</strong>.
+                </p>
+                <button onClick={() => navigate('/company/login')} className="btn btn-company" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  Dismiss
+                </button>
+              </motion.div>
+            )}
+
+            {step === 'token' && (
+              <motion.form key="token-step" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} onSubmit={handleVerifyToken} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div className="input-wrapper">
+                  <i className="input-icon"><ShieldCheck size={18} /></i>
+                  <input type="text" placeholder="Security Token" value={token} onChange={(e) => setToken(e.target.value)} required disabled={loading} style={{ paddingRight: '1rem' }} />
+                </div>
+                <button type="submit" className="btn btn-company" disabled={loading} style={{ height: '3.2rem', marginTop: '0.5rem' }}>
+                  {loading ? 'Verifying...' : 'Validate Token'}
+                </button>
+                <button type="button" onClick={() => setStep('email')} className="btn" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                  Resend token
+                </button>
+              </motion.form>
+            )}
+
+            {step === 'password' && (
+              <motion.form key="pass-step" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div className="input-wrapper">
+                  <i className="input-icon"><Lock size={18} /></i>
+                  <input type="password" placeholder="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required disabled={loading} minLength={6} style={{ paddingRight: '1rem' }} />
+                </div>
+                <div className="input-wrapper">
+                  <i className="input-icon"><Lock size={18} /></i>
+                  <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={loading} minLength={6} style={{ paddingRight: '1rem' }} />
+                </div>
+                <button type="submit" className="btn btn-company" disabled={loading} style={{ height: '3.2rem', marginTop: '0.5rem' }}>
+                  {loading ? 'Updating...' : 'Set Password'}
+                </button>
+              </motion.form>
+            )}
+          </AnimatePresence>
+
+          <p style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+            Direct access? <Link to="/company/login" style={{ color: 'var(--accent-cyan)', fontWeight: 600, textDecoration: 'none' }}>Login</Link>
           </p>
-        )}
-
-        {error && (
-          <div style={{ 
-            background: '#fee', 
-            color: '#c33', 
-            padding: '10px', 
-            borderRadius: '5px', 
-            marginBottom: '15px',
-            fontSize: '0.9rem'
-          }}>
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div style={{ 
-            background: '#efe', 
-            color: '#2a7', 
-            padding: '10px', 
-            borderRadius: '5px', 
-            marginBottom: '15px',
-            fontSize: '0.9rem'
-          }}>
-            {success}
-          </div>
-        )}
-
-        {/* Link Sent State */}
-        {step === 'linkSent' && (
-          <div style={{ textAlign: 'center', padding: '20px 0' }}>
-            <p style={{ marginBottom: '20px', fontSize: '1rem', color: '#666' }}>
-              A password reset link has been sent to your email.
-            </p>
-            <p style={{ marginBottom: '20px', fontSize: '0.9rem', color: '#666' }}>
-              Please check your inbox and click the link to reset your password.
-            </p>
-            <p style={{ fontSize: '0.85rem', color: '#999', fontStyle: 'italic' }}>
-              You may close this window.
-            </p>
-          </div>
-        )}
-
-        {/* Verifying Token State */}
-        {step === 'verifying' && (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <div style={{ 
-              display: 'inline-block',
-              width: '40px',
-              height: '40px',
-              border: '4px solid #f3f3f3',
-              borderTop: '4px solid #0f766e',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-              marginBottom: '20px'
-            }}></div>
-            <p style={{ fontSize: '1rem', color: '#666' }}>
-              Verifying token...
-            </p>
-            <style>{`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}</style>
-          </div>
-        )}
-
-        {/* Step 1: Enter Email */}
-        {step === 'email' && (
-          <form onSubmit={handleRequestReset}>
-            <div style={{ textAlign: 'left', marginBottom: '15px' }}>
-              <input 
-                type="email" 
-                placeholder="company@example.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-                required 
-              />
-            </div>
-            <button 
-              type="submit" 
-              className="btn" 
-              style={{ width: '100%', backgroundColor: '#0f766e' }}
-              disabled={loading}
-            >
-              {loading ? 'Sending...' : 'Send Reset Token'}
-            </button>
-          </form>
-        )}
-
-        {/* Step 2: Enter Token */}
-        {step === 'token' && (
-          <form onSubmit={handleVerifyToken}>
-            <div style={{ textAlign: 'left', marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>
-                Reset Token
-              </label>
-              <input 
-                type="text" 
-                placeholder="Enter the token from your email" 
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                disabled={loading}
-                required 
-              />
-            </div>
-            <button 
-              type="submit" 
-              className="btn" 
-              style={{ width: '100%', backgroundColor: '#0f766e' }}
-              disabled={loading}
-            >
-              {loading ? 'Verifying...' : 'Verify Token'}
-            </button>
-            <button 
-              type="button"
-              onClick={() => setStep('email')}
-              style={{ 
-                width: '100%', 
-                marginTop: '10px',
-                background: 'none',
-                border: '1px solid #0f766e',
-                color: '#0f766e',
-                padding: '10px',
-                borderRadius: '5px',
-                cursor: 'pointer'
-              }}
-            >
-              Request New Token
-            </button>
-          </form>
-        )}
-
-        {/* Step 3: Enter New Password */}
-        {step === 'password' && (
-          <form onSubmit={handleResetPassword}>
-            <div style={{ textAlign: 'left', marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>
-                New Password
-              </label>
-              <input 
-                type="password" 
-                placeholder="Enter new password" 
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                disabled={loading}
-                required 
-                minLength={6}
-              />
-            </div>
-            <div style={{ textAlign: 'left', marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem' }}>
-                Confirm Password
-              </label>
-              <input 
-                type="password" 
-                placeholder="Confirm new password" 
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={loading}
-                required 
-                minLength={6}
-              />
-            </div>
-            <button 
-              type="submit" 
-              className="btn" 
-              style={{ width: '100%', backgroundColor: '#0f766e' }}
-              disabled={loading}
-            >
-              {loading ? 'Resetting...' : 'Reset Password'}
-            </button>
-          </form>
-        )}
-
-        <p style={{ marginTop: '15px', fontSize: '0.9rem' }}>
-          Remember your password? <Link to="/company/login" className="link">Login</Link>
-        </p>
+        </motion.div>
       </div>
     </div>
   );
