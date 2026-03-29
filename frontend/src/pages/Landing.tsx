@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { GraduationCap, Building2, ShieldCheck, ArrowLeft, ChevronRight } from 'lucide-react';
 import BlurText from '../components/ui/BlurText';
 import ElectricBorder from '../components/ui/ElectricBorder';
-import LiquidEther from '../components/ui/LiquidEther';
+import DotGrid from '../components/ui/DotGrid';
 import '../App.css';
 
 const Landing: React.FC = () => {
@@ -20,8 +20,28 @@ const Landing: React.FC = () => {
       background: 'var(--bg-primary)',
       overflow: 'hidden',
     }}>
-      {/* Background */}
-      <LiquidEther style={{ position: 'absolute', inset: 0, zIndex: 1, width: '100vw', height: '100vh' }} />
+      {/* Fixed DotGrid Background */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        width: '100vw',
+        height: '100vh',
+        background: 'var(--bg-primary)'
+      }}>
+        <DotGrid
+          dotSize={4}
+          gap={20}
+          baseColor="#333333"
+          activeColor="#cccccc"
+          proximity={120}
+          shockRadius={250}
+          shockStrength={5}
+          resistance={750}
+          returnDuration={1.5}
+        />
+      </div>
 
       {/* Content */}
       <div style={{

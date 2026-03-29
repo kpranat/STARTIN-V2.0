@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-// Using raw WebGL instead of OGL for simpler integration
+
 const vertexShader = `
   attribute vec2 position;
   void main() {
