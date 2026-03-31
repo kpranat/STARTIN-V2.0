@@ -1,63 +1,55 @@
-/* src/App.css */
+/* src/App.css — Dark Premium Theme */
 
-/* --- 1. Variables & Design Tokens --- */
-:root {
-  --primary: #4f46e5;       /* Student Theme (Indigo) */
-  --primary-hover: #4338ca;
-  
-  --teal: #0f766e;          /* Company Theme (Teal) */
-  --teal-hover: #0d5f58;
-
-  --text-main: #111827;
-  --text-muted: #6b7280;
-  --bg-page: #f9fafb;
-  --white: #ffffff;
-  
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --radius: 8px;
-}
-
-body {
-  background-color: var(--bg-page);
-  color: var(--text-main);
-}
-
-/* --- 2. Layout Containers --- */
+/* --- 1. Layout Containers --- */
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
   min-height: 80vh;
+  padding-top: calc(var(--nav-height) + 2rem);
 }
 
-/* Constrains width for Profiles, Logins, Forms */
-.profile-container, 
-.form-container, 
-.landing-container {
+.profile-container,
+.form-container {
   max-width: 600px;
   margin: 40px auto;
-  background: var(--white);
+  background: var(--bg-glass);
   padding: 40px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   box-shadow: var(--shadow-md);
-  text-align: left; /* Aligns form labels left */
+  text-align: left;
+  font-family: 'Yrsa', serif;
 }
 
-/* Wider container for Landing page selection */
+.form-container h2,
+.form-container p,
+.form-container button,
+.form-container a,
+.form-container input {
+  font-family: 'Yrsa', serif !important;
+}
+
 .landing-container {
   max-width: 900px;
+  margin: 40px auto;
   text-align: center;
+  background: transparent;
+  padding: 40px;
 }
 
-/* --- 3. Navbar Styles --- */
+/* --- 2. Navbar Styles (Legacy — used by Student/Company navbars) --- */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 2rem;
-  background-color: var(--white);
-  border-bottom: 1px solid #e5e7eb;
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -66,8 +58,9 @@ body {
 .logo {
   font-size: 1.25rem;
   font-weight: 800;
-  color: var(--primary);
+  color: var(--accent-purple);
   letter-spacing: -0.5px;
+  font-family: 'Outfit', sans-serif;
 }
 
 .nav-links {
@@ -78,17 +71,17 @@ body {
 
 .nav-link {
   text-decoration: none;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-weight: 500;
   font-size: 0.95rem;
   transition: color 0.2s;
 }
 
 .nav-link:hover {
-  color: var(--primary);
+  color: var(--accent-purple);
 }
 
-/* --- 4. Form Elements (Inputs & Textareas) --- */
+/* --- 3. Form Elements --- */
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -97,26 +90,62 @@ body {
   display: block;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  padding-left: 2.75rem;
+  /* Space for icon */
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   font-size: 0.95rem;
   font-family: inherit;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  background-color: #fff;
-  box-sizing: border-box; /* Critical for stopping overflow */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+  box-sizing: border-box;
 }
 
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1), var(--shadow-glow);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: var(--accent-purple);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
 }
 
 textarea {
@@ -124,57 +153,70 @@ textarea {
   resize: vertical;
 }
 
-/* Side-by-side inputs */
 .form-row {
   display: flex;
   gap: 20px;
 }
+
 .form-row .form-group {
   flex: 1;
 }
 
-/* --- 5. Buttons --- */
-.btn, .btn-save, .apply-btn {
+/* --- 4. Buttons --- */
+.btn,
+.btn-save,
+.apply-btn {
   display: inline-flex;
   justify-content: center;
   align-items: center;
   padding: 0.75rem 1.5rem;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   border: none;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   text-decoration: none;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Primary Button (Student Default) */
-.btn, .btn-save {
-  background-color: var(--primary);
+.btn,
+.btn-save {
+  background: var(--gradient-primary);
   color: white;
-}
-.btn:hover, .btn-save:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
 }
 
-/* Logout Button (Subtle) */
+.btn:hover,
+.btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.4);
+}
+
+.btn:active,
+.btn-save:active {
+  transform: translateY(0);
+}
+
 .btn-logout {
-  background-color: #fee2e2;
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
   padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 0.85rem;
   font-weight: 600;
-  border: none;
+  border: 1px solid rgba(239, 68, 68, 0.2);
   cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-logout:hover {
-  background-color: #fecaca;
+  transition: all 0.2s;
 }
 
-/* --- 6. Cards (Landing & University) --- */
+.btn-logout:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* --- 5. Cards --- */
 .selection-box {
   display: flex;
   gap: 30px;
@@ -183,20 +225,24 @@ textarea {
 }
 
 .card {
-  background: var(--white);
+  background: var(--bg-glass);
   padding: 2rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
   flex: 1;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-glow);
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
 }
 
-/* --- 7. Job Grid & Cards --- */
+/* --- 6. Job Grid & Cards --- */
 .jobs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -204,51 +250,75 @@ textarea {
 }
 
 .job-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   padding: 1.5rem;
-  transition: all 0.2s;
+  transition: all 0.3s;
   display: flex;
   flex-direction: column;
+  backdrop-filter: blur(10px);
 }
 
 .job-card:hover {
-  border-color: var(--primary);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
 }
 
-.job-role { margin: 0 0 5px 0; font-size: 1.1rem; }
-.company-name { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+.job-role {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
 
-.skills-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
+.company-name {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.skills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
 .skill-tag {
-  background: #f3f4f6; color: #374151;
-  padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--text-accent);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid rgba(139, 92, 246, 0.15);
 }
 
-/* --- 8. File Upload Box --- */
+/* --- 7. File Upload Box --- */
 .file-upload-box {
-  border: 2px dashed #d1d5db;
-  border-radius: var(--radius);
+  border: 2px dashed var(--border-subtle);
+  border-radius: var(--radius-sm);
   padding: 2rem;
   text-align: center;
-  background-color: #f9fafb;
+  background: var(--bg-glass);
   cursor: pointer;
-  transition: all 0.2s;
-}
-.file-upload-box:hover {
-  border-color: var(--primary);
-  background-color: #eef2ff;
+  transition: all 0.3s;
 }
 
-/* --- 9. Utility: Center Content --- */
+.file-upload-box:hover {
+  border-color: var(--accent-purple);
+  background: rgba(139, 92, 246, 0.05);
+}
+
+/* --- 8. Utility --- */
 .btn-save-container {
   display: flex;
   justify-content: center;
   margin-top: 2rem;
 }
-/* --- Loading Page Styles --- */
+
+/* --- 9. Loading Page --- */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -256,17 +326,17 @@ textarea {
   justify-content: center;
   height: 100vh;
   width: 100%;
-  background-color: var(--bg-page);
+  background: var(--bg-primary);
   animation: fadeIn 0.5s ease-in-out;
 }
 
-/* Modern Ring Spinner */
 .loader-ring {
   display: inline-block;
   position: relative;
   width: 80px;
   height: 80px;
 }
+
 .loader-ring div {
   box-sizing: border-box;
   display: block;
@@ -274,35 +344,155 @@ textarea {
   width: 64px;
   height: 64px;
   margin: 8px;
-  border: 4px solid var(--primary); /* Uses your Indigo theme */
+  border: 3px solid transparent;
+  border-top-color: var(--accent-purple);
   border-radius: 50%;
   animation: ring-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-  border-color: var(--primary) transparent transparent transparent;
 }
-.loader-ring div:nth-child(1) { animation-delay: -0.45s; }
-.loader-ring div:nth-child(2) { animation-delay: -0.3s; }
-.loader-ring div:nth-child(3) { animation-delay: -0.15s; }
+
+.loader-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+  border-top-color: var(--accent-pink);
+}
+
+.loader-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+  border-top-color: var(--accent-cyan);
+}
+
+.loader-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
 
 @keyframes ring-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .loading-text {
   margin-top: 25px;
   font-size: 1.1rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-weight: 500;
   letter-spacing: 0.5px;
   animation: pulseText 2s infinite ease-in-out;
 }
 
 @keyframes pulseText {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* --- 10. University List (Dark) --- */
+.uni-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.uni-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.uni-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-glow);
+  transform: translateX(4px);
+}
+
+.uni-card h3 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.uni-card .arrow {
+  color: var(--accent-purple);
+  font-size: 1.2rem;
+  transition: transform 0.3s;
+}
+
+.uni-card:hover .arrow {
+  transform: translateX(4px);
+}
+
+/* --- 11. Error Messages (Dark) --- */
+.error-message {
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-sm);
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+/* --- 12. Responsive --- */
+@media (max-width: 768px) {
+  .selection-box {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .page-container {
+    padding: 1rem;
+    padding-top: calc(var(--nav-height) + 1rem);
+  }
+
+  .profile-container,
+  .form-container {
+    padding: 24px;
+    margin: 20px 16px;
+  }
+
+  .navbar {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .nav-links {
+    gap: 12px;
+    font-size: 0.85rem;
+  }
 }

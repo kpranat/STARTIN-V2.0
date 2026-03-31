@@ -1,16 +1,16 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// Loading Transition (Ensure this file exists!)
+// Loading Transition
 import LoadingTransition from './pages/LoadingTransition';
 
 // Components
-// import ProtectedRoute from './components/ProtectedRoute'; // Uncomment if you have this component
 import CompanyProfileCheck from './components/CompanyProfileCheck';
 import StudentProfileCheck from './components/StudentProfileCheck';
 
 // General Pages
 import UniversitySelect from './pages/UniversitySelect';
 import Landing from './pages/Landing';
+import HeroLanding from './pages/HeroLanding';
 
 // Auth Pages
 import StudentLogin from './pages/StudentLogin';
@@ -41,8 +41,11 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Hero Landing Page */}
+        <Route path="/" element={<HeroLanding />} />
+
         {/* Step 1: Select University */}
-        <Route path="/" element={<UniversitySelect />} />
+        <Route path="/select-university" element={<UniversitySelect />} />
 
         {/* Step 2: Choose Role */}
         <Route path="/role-selection" element={<Landing />} />
@@ -74,10 +77,10 @@ function App() {
         <Route path="/company/jobs" element={<CompanyJobs />} />
         <Route path="/company/applicants" element={<CompanyApplicants />} />
         <Route path="/company/home" element={<CompanyProfile />} />
-        
+
         {/* Step 6: Admin Dashboard */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        
+
       </Routes>
     </Router>
   );

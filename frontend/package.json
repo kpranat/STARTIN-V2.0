@@ -12,16 +12,22 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "axios": "^1.13.2",
+    "framer-motion": "^12.38.0",
+    "gsap": "^3.14.2",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^1.7.0",
+    "ogl": "^1.0.11",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.10.1"
+    "react-router-dom": "^7.10.1",
+    "three": "^0.183.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.183.1",
     "@vitejs/plugin-react-swc": "^4.2.2",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
