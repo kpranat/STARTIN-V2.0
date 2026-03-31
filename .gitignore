@@ -2,3 +2,4 @@ venv
 .idea
 .env
 .gitignore
+0001-postgress-migration-successfull.patch
