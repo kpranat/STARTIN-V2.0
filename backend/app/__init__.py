@@ -9,16 +9,10 @@ import os
 def create_app():
     app = Flask(__name__)
 
-# Enable CORS for all routes
+    # Enable CORS for all routes
     CORS(app, resources={
         r"/*": {
-            "origins": [
-                "http://localhost:5173", 
-                "http://127.0.0.1:5173",
-                "https://startin-v2-0.vercel.app",
-                # Allow all Vercel preview deployments with regex pattern
-                r"https://.*\.vercel\.app"
-            ],
+            "origins": "*",
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
             "supports_credentials": True
