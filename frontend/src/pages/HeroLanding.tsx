@@ -21,7 +21,7 @@ const navItems = [
     { label: 'Contact', href: '#contact' },
 ];
 
-const FadeInSection = ({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) => {
+const FadeInSection = ({ children, delay = 0, className = "", style }: { children: React.ReactNode; delay?: number; className?: string; style?: React.CSSProperties }) => {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: '-50px' });
 
@@ -32,6 +32,7 @@ const FadeInSection = ({ children, delay = 0, className = "" }: { children: Reac
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
             transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
             className={className}
+            style={style}
         >
             {children}
         </motion.div>
